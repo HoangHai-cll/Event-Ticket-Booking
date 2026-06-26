@@ -1,0 +1,11 @@
+<resources>
+    <color name="brand_primary">#4A36E3</color>
+    <color name="brand_primary_dark">#3724B5</color>
+    <color name="brand_light_purple">#ECE8FF</color>
+
+    <color name="bg_light">#F5F7FA</color>
+    <color name="white">#FFFFFF</color>
+    <color name="ink_dark">#0E1322</color>
+    <color name="text_muted">#5A647A</color>
+    <color name="rule_border">#E2E6EE</color>
+</resources>

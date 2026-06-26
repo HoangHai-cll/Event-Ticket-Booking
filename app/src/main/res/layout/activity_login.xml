@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/bg_light">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:gravity="center_horizontal">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="2dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@string/app_name"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/img" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#66000000" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="center"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardBackgroundColor="@color/brand_primary">
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/img_logo_event_ticket_booking" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="EventPass"
+                        android:textColor="@color/white"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:layout_marginStart="10dp"/>
+                </LinearLayout>
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chào mừng trở lại"
+            android:textColor="@color/ink_dark"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đăng nhập để khám phá những sự kiện tuyệt vời nhất."
+            android:textColor="@color/text_muted"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="28dp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:boxBackgroundColor="@color/white"
+            app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp"
+            app:startIconDrawable="@android:drawable/ic_dialog_email"
+            android:layout_marginBottom="16dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edt_login_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Email"
+                android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:boxBackgroundColor="@color/white"
+            app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp" app:boxCornerRadiusBottomEnd="12dp"
+            app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
+            app:passwordToggleEnabled="true"
+            android:layout_marginBottom="12dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edt_login_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Mật khẩu"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/tv_forgot_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Quên mật khẩu?"
+            android:textColor="@color/brand_primary"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:layout_gravity="end"
+            android:layout_marginBottom="24dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_login"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Đăng nhập  ➔"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            app:backgroundTint="@color/brand_primary"
+            app:cornerRadius="12dp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="32dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chưa có tài khoản? "
+                android:textColor="@color/text_muted"/>
+            <TextView
+                android:id="@+id/tv_link_register"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đăng ký ngay"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:textColor="@color/brand_primary"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HOẶC TIẾP TỤC VỚI"
+            android:textColor="#A0A9BC"
+            android:textSize="11sp"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="16dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_login_google"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="Google"
+                android:layout_marginEnd="6dp"
+                android:textColor="@color/ink_dark"
+                app:icon="@drawable/img_google"
+                app:iconTint="@null"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp"
+                app:strokeColor="@color/rule_border"
+                app:cornerRadius="12dp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_login_facebook"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="Facebook"
+                android:layout_marginStart="6dp"
+                android:textColor="@color/ink_dark"
+                app:icon="@drawable/img_facebook"
+                app:iconTint="@null"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp"
+                app:strokeColor="@color/rule_border"
+                app:cornerRadius="12dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

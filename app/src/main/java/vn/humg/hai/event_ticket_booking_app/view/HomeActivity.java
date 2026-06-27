@@ -1,7 +1,5 @@
 package vn.humg.hai.event_ticket_booking_app.view;
 
-import vn.humg.hai.event_ticket_booking_app.R;
-
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +18,11 @@ public class HomeActivity extends AppCompatActivity {
             Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
+        });
+
+        findViewById(R.id.card_feature).setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, EventDetailActivity.class);
+            startActivity(intent);
         });
     }
 }

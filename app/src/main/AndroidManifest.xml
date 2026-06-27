@@ -24,6 +24,9 @@
             android:name=".view.HomeActivity"
             android:exported="true" />
         <activity
+            android:name=".view.EventDetailActivity"
+            android:exported="true" />
+        <activity
             android:name=".view.MainActivity"
             android:exported="true">
             <intent-filter>

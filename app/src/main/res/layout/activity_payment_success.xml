@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_light">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/layout_buttons"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <ImageView
+                android:id="@+id/iv_success_check"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="20dp"
+                android:src="@android:drawable/checkbox_on_background"
+                app:tint="#10B981"
+                android:contentDescription="@string/label_payment_success" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/label_payment_success"
+                android:textColor="@color/ink_dark"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="@string/label_payment_success_desc"
+                android:textColor="@color/text_muted"
+                android:textSize="14sp" />
+
+            <!-- The Ticket Stub -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Top Part: Event Info -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:baselineAligned="false">
+                            <TextView
+                                android:id="@+id/tv_success_category"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_chip_light"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="4dp"
+                                android:text="@string/app_name"
+                                android:textColor="@color/brand_primary"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                            <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/status_ticket_confirmed"
+                                android:textColor="#10B981"
+                                android:textStyle="bold"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tv_success_event_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:textColor="@color/ink_dark"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            tools:text="Vietnam Tech Summit 2025" />
+
+                        <GridLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:columnCount="2">
+
+                            <LinearLayout android:orientation="vertical" android:layout_columnWeight="1">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/label_success_date" android:textColor="@color/text_muted" android:textSize="11sp" />
+                                <TextView android:id="@+id/tv_success_date" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textStyle="bold" android:textColor="@color/ink_dark" tools:text="15 Tháng 7" />
+                            </LinearLayout>
+
+                            <LinearLayout android:orientation="vertical" android:layout_columnWeight="1">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/label_success_time" android:textColor="@color/text_muted" android:textSize="11sp" />
+                                <TextView android:id="@+id/tv_success_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textStyle="bold" android:textColor="@color/ink_dark" tools:text="08:00" />
+                            </LinearLayout>
+
+                            <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:layout_marginTop="12dp">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/label_success_qty" android:textColor="@color/text_muted" android:textSize="11sp" />
+                                <TextView android:id="@+id/tv_success_quantity" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textStyle="bold" android:textColor="@color/ink_dark" tools:text="2 vé" />
+                            </LinearLayout>
+                        </GridLayout>
+                    </LinearLayout>
+
+                    <!-- Ticket Tear-off Effect -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp">
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_centerInParent="true"
+                            android:layout_marginHorizontal="28dp"
+                            android:background="@drawable/bg_dashed_line" />
+                        <!-- Left and Right Cut-outs -->
+                        <View
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="-12dp"
+                            android:background="@drawable/bg_circle_gray"
+                            android:backgroundTint="@color/bg_light" />
+                        <View
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginEnd="-12dp"
+                            android:background="@drawable/bg_circle_gray"
+                            android:backgroundTint="@color/bg_light" />
+                    </RelativeLayout>
+
+                    <!-- Bottom Part: QR Code & ID -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_success_ticket_id"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="12dp" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#F1F3F9"
+                            app:strokeWidth="1dp">
+                            <ImageView
+                                android:id="@+id/iv_success_qr"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="16dp"
+                                android:src="@drawable/img_logo_event_ticket_booking"
+                                android:contentDescription="@string/label_success_ticket_id" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/tv_success_booking_id"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:letterSpacing="0.2"
+                            android:textColor="@color/ink_dark"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="BK-XJ92A1" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <View android:layout_width="match_parent" android:layout_height="40dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Fixed Buttons at Bottom -->
+    <LinearLayout
+        android:id="@+id/layout_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_view_tickets"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:text="@string/btn_view_my_tickets"
+            android:textAllCaps="false"
+            android:textColor="@color/brand_primary"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="#F5F3FF"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_go_home"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="@string/btn_back_to_home"
+            android:textAllCaps="false"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/brand_primary"
+            app:cornerRadius="14dp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

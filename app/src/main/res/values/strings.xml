@@ -1,3 +1,245 @@
 <resources>
-    <string name="app_name">Event_Ticket_Booking_App</string>
+    <string name="app_name">EventPass</string>
+    <string name="price_format">%,d VNĐ</string>
+    <string name="login_now">Đăng nhập ngay</string>
+    <string name="search_hint">Tìm kiếm sự kiện, nghệ sĩ...</string>
+    <string name="hot_events_title">Sự kiện Hot 🔥</string>
+    <string name="register_events_title">Đăng ký sự kiện</string>
+    <string name="see_all">Xem tất cả</string>
+    <string name="cat_music">♪ Nhạc hội</string>
+    <string name="cat_seminar">👥 Hội thảo</string>
+    <string name="cat_workshop">🧭 Workshop</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_tickets">My Tickets</string>
+    <string name="nav_history">History</string>
+    <string name="nav_profile">Profile</string>
+
+    <string name="my_tickets_title">Vé của tôi</string>
+    <string name="history_title">Lịch sử giao dịch</string>
+    <string name="total_spent_label">Tổng chi tiêu</string>
+    <string name="logout_btn">➔ Đăng xuất</string>
+    <string name="home_welcome">Chào mừng trở lại!</string>
+    <string name="categories_title">Danh mục</string>
+    <string name="profile_title">Hồ sơ của bạn</string>
+
+    <!-- Profile labels -->
+    <string name="menu_edit">Chỉnh sửa hồ sơ</string>
+    <string name="menu_password">Đổi mật khẩu</string>
+    <string name="menu_settings">Cài đặt</string>
+    <string name="menu_support">Trung tâm hỗ trợ</string>
+    <string name="menu_terms">Điều khoản</string>
+
+    <!-- Change Password (Suatheo.md) -->
+    <string name="title_change_password">Đổi mật khẩu</string>
+    <string name="title_secure_update">🛡️ Cập nhật tài khoản an toàn</string>
+    <string name="msg_keep_account_safe">Giữ tài khoản của bạn an toàn</string>
+    <string name="desc_keep_account_safe">Hãy cập nhật mật khẩu thường xuyên để đảm bảo tài khoản EventPass của bạn luôn được bảo mật và riêng tư.</string>
+    <string name="label_current_password">Mật khẩu hiện tại</string>
+    <string name="hint_current_password">Nhập mật khẩu hiện tại 👁️</string>
+    <string name="label_new_password">Mật khẩu mới</string>
+    <string name="hint_new_password">Nhập mật khẩu mới 👁️</string>
+    <string name="label_confirm_new_password">Xác nhận mật khẩu mới</string>
+    <string name="hint_confirm_new_password">Nhập lại mật khẩu mới 👁️</string>
+    <string name="label_strength">Độ mạnh: Quá ngắn</string>
+    <string name="label_requirement">Yêu cầu: Tối thiểu 8 ký tự</string>
+    <string name="btn_submit_change_password">🔑 Đổi mật khẩu</string>
+    <string name="msg_notice_logout">Lưu ý: Việc cập nhật mật khẩu sẽ đăng xuất tài khoản của bạn khỏi tất cả các thiết bị khác để bảo vệ an toàn.</string>
+
+    <!-- Help Center (Suatheo.md) -->
+    <string name="support_title">Trung tâm hỗ trợ</string>
+    <string name="support_hero_title">Chúng tôi có thể giúp gì cho bạn?</string>
+    <string name="support_search_hint">Tìm kiếm câu hỏi, chủ đề, từ khóa...</string>
+    <string name="help_cat_booking">🗓️ Đặt vé</string>
+    <string name="help_desc_booking">Sửa đổi, hủy hoặc theo dõi vé</string>
+    <string name="help_cat_payment">💵 Thanh toán</string>
+    <string name="help_desc_payment">Hoàn tiền, hóa đơn, phương thức</string>
+    <string name="help_cat_account">👤 Tài khoản</string>
+    <string name="help_desc_account">Đăng nhập, bảo mật, cài đặt</string>
+    <string name="help_cat_general">❓ Chung</string>
+    <string name="help_desc_general">Thông tin ứng dụng, chính sách</string>
+    <string name="label_faq">Câu hỏi thường gặp</string>
+    <string name="faq_1">Làm thế nào để được hoàn tiền vé?</string>
+    <string name="faq_2">Tôi có thể chuyển nhượng vé cho bạn bè không?</string>
+    <string name="faq_3">Điều gì xảy ra nếu sự kiện bị hủy?</string>
+    <string name="label_still_need_help">Bạn vẫn cần trợ giúp?</string>
+    <string name="label_live_chat">Trò chuyện trực tiếp</string>
+    <string name="desc_live_chat">Thời gian chờ dự kiến: 2 phút</string>
+
+    <!-- Settings (Suatheo.md) -->
+    <string name="section_notifications">THÔNG BÁO</string>
+    <string name="label_notif_app">Thông báo ứng dụng</string>
+    <string name="desc_notif_app">Cập nhật sự kiện và cảnh báo thời gian thực</string>
+    <string name="label_notif_email">Email khuyến mãi</string>
+    <string name="desc_notif_email">Ưu đãi độc quyền và bản tin</string>
+    <string name="section_options">TÙY CHỌN</string>
+    <string name="label_lang">Lựa chọn ngôn ngữ</string>
+    <string name="val_lang">Tiếng Việt (VN)</string>
+    <string name="label_dark_mode">Chế độ tối</string>
+    <string name="section_security">BẢO MẬT TÀI KHOẢN</string>
+    <string name="desc_pass_update">Cập nhật 3 tháng trước</string>
+    <string name="label_2fa">Xác thực hai yếu tố</string>
+    <string name="desc_2fa">Đã bảo mật qua ứng dụng Authenticator</string>
+    <string name="section_app_info">THÔNG TIN ỨNG DỤNG</string>
+    <string name="label_app_version">Phiên bản ứng dụng</string>
+    <string name="val_app_version">v2.4.12-pro</string>
+    <string name="label_legal_info">Thông tin pháp lý</string>
+    <string name="desc_legal_info">Chính sách bảo mật &amp; Điều khoản dịch vụ</string>
+    <string name="btn_logout_label">🚪 Đăng xuất</string>
+
+    <!-- Edit Profile (Suatheo.md) -->
+    <string name="label_avatar_title">Ảnh đại diện</string>
+    <string name="desc_avatar_change">Chạm để thay đổi ảnh</string>
+    <string name="section_personal">Thông tin cá nhân</string>
+    <string name="label_full_name">Họ và tên</string>
+    <string name="label_email">Địa chỉ Email</string>
+    <string name="label_phone">Số điện thoại</string>
+    <string name="label_birthday">Ngày sinh</string>
+    <string name="label_gender">Giới tính</string>
+    <string name="label_interests">Sở thích sự kiện</string>
+    <string name="tag_music">Âm nhạc ✕</string>
+    <string name="tag_tech">Công nghệ ✕</string>
+    <string name="label_add_tag">+ Thêm thẻ</string>
+    <string name="btn_save_profile_label">💾 Lưu thay đổi</string>
+
+    <!-- Legal (Suatheo.md) -->
+    <string name="label_legal_agreement">Thỏa thuận pháp lý</string>
+    <string name="desc_legal_agreement">Vui lòng xem lại các điều khoản dịch vụ, chính sách đặt chỗ và hướng dẫn quyền riêng tư của chúng tôi trước khi sử dụng nền tảng. Cập nhật lần cuối: Tháng 10 năm 2023.</string>
+    <string name="tab_general">Điều khoản chung</string>
+    <string name="tab_booking">Chính sách đặt chỗ</string>
+    <string name="tab_refund">Hoàn tiền</string>
+    <string name="label_agree_terms">Tôi đã đọc và đồng ý với tất cả các điều khoản</string>
+    <string name="btn_confirm_continue">Xác nhận &amp; Tiếp tục</string>
+    <string name="footer_commit">Cam kết từ EventPass</string>
+    <string name="commit_safe">🛡️ Thanh toán bảo mật</string>
+    <string name="commit_support">🎧 Hỗ trợ 24/7</string>
+    <string name="commit_data">☁️ Bảo mật dữ liệu</string>
+
+    <!-- Essential missing strings from build errors -->
+    <string name="admin_welcome_format">Chào mừng, %1$s</string>
+    <string name="msg_load_error">Lỗi tải dữ liệu</string>
+    <string name="msg_no_tickets">Bạn chưa có vé nào</string>
+    <string name="msg_ticket_count">Bạn có %1$d vé</string>
+    <string name="msg_login_required">Vui lòng đăng nhập</string>
+    <string name="label_payment_title">Thanh toán</string>
+    <string name="btn_pay_now_format">Thanh toán ngay • %1$s</string>
+    <string name="label_select_ticket">Chọn vé</string>
+    <string name="label_ticket_summary_format">Vé Tiêu chuẩn × %1$d</string>
+    <string name="btn_confirm_ticket_format">Xác nhận đặt vé → %1$s</string>
+    <string name="label_event_summary_format">%1$s • %2$d vé</string>
+    <string name="label_success_qty">Số lượng</string>
+    <string name="label_success_ticket_id">Mã vé</string>
+    <string name="label_success_date">Ngày</string>
+    <string name="label_success_time">Thời gian</string>
+
+    <!-- Admin Dashboard -->
+    <string name="admin_dashboard_title">Admin Dashboard</string>
+    <string name="admin_revenue_report">Báo cáo doanh thu</string>
+    <string name="admin_revenue_today">Hôm nay</string>
+    <string name="admin_revenue_month">Tháng này</string>
+    <string name="admin_total_revenue">Tổng doanh thu</string>
+    <string name="admin_tickets_sold">Vé đã bán</string>
+    <string name="admin_customers">Khách hàng</string>
+    <string name="admin_rating_avg">Đánh giá TB</string>
+    <string name="admin_rating_default">4.8</string>
+    <string name="admin_quality_analysis">Phân tích chất lượng</string>
+    <string name="admin_recent_bookings">Giao dịch gần đây</string>
+    <string name="admin_analysis_top">Phân tích Top</string>
+    <string name="admin_top_customers">Khách hàng Top</string>
+    <string name="admin_system_management">Quản lý hệ thống</string>
+    <string name="admin_add_event">Thêm sự kiện</string>
+    <string name="admin_manage_events">Quản lý sự kiện</string>
+    <string name="admin_manage_bookings">Quản lý giao dịch</string>
+    <string name="admin_manage_users">Quản lý người dùng</string>
+    <string name="admin_manage_reviews">Quản lý đánh giá</string>
+    <string name="admin_category_revenue">Doanh thu theo DM</string>
+
+    <!-- Admin Dashboard (continued) -->
+    <string name="admin_recent_reviews">Đánh giá gần đây</string>
+
+    <!-- Change Password -->
+    <string name="msg_logout_notice">Bạn sẽ bị đăng xuất sau khi đổi mật khẩu.</string>
+
+    <!-- Login Activity -->
+    <string name="login_title">Đăng nhập</string>
+    <string name="login_subtitle">Vui lòng đăng nhập để tiếp tục</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Mật khẩu</string>
+    <string name="forgot_password">Quên mật khẩu?</string>
+    <string name="login_button">Đăng nhập</string>
+    <string name="no_account_prompt">Chưa có tài khoản?</string>
+    <string name="register_now">Đăng ký ngay</string>
+    <string name="or_continue_with">Hoặc tiếp tục với</string>
+    <string name="google_label">Google</string>
+    <string name="facebook_label">Facebook</string>
+
+    <!-- Main Activity -->
+    <string name="emoji_home">🏠</string>
+    <string name="emoji_tickets">🎟️</string>
+    <string name="emoji_history">📜</string>
+    <string name="emoji_profile_nav">👤</string>
+
+    <!-- Payment Activity -->
+    <string name="label_payment_amount">Số tiền thanh toán</string>
+    <string name="label_payment_method">Phương thức thanh toán</string>
+    <string name="label_momo">Ví MoMo</string>
+    <string name="label_momo_desc">Thanh toán bằng ví điện tử MoMo</string>
+    <string name="label_vnpay">VNPay</string>
+    <string name="label_vnpay_desc">Thanh toán qua cổng VNPay</string>
+    <string name="label_bank">Thẻ ngân hàng</string>
+    <string name="label_bank_desc">Thanh toán bằng thẻ ATM/Visa/Mastercard</string>
+    <string name="label_security_notice">Thanh toán của bạn được bảo mật an toàn.</string>
+    
+    <!-- Payment Success -->
+    <string name="label_payment_success">Thanh toán thành công</string>
+    <string name="label_payment_success_desc">Cảm ơn bạn đã mua vé!</string>
+    <string name="status_ticket_confirmed">Đã xác nhận</string>
+    <string name="btn_view_my_tickets">Xem vé của tôi</string>
+    <string name="btn_back_to_home">Về trang chủ</string>
+
+    <!-- Additional Checkout Redesign Strings -->
+    <string name="msg_input_contact_required">Vui lòng nhập đầy đủ thông tin liên hệ</string>
+    <string name="msg_select_payment_required">Vui lòng chọn phương thức thanh toán</string>
+    <string name="ticket_count_format">%1$d x Vé</string>
+    <string name="payment_method_bank">Thẻ tín dụng / Ghi nợ</string>
+    <string name="payment_method_momo">Ví Momo</string>
+    <string name="payment_method_vnpay">VNPAY</string>
+    <string name="payment_method_cod">Thanh toán tại quầy (COD)</string>
+    <string name="payment_method_free">Miễn phí</string>
+    <string name="contact_summary_format">%1$s - %2$s</string>
+    <string name="msg_processing_transaction">ĐANG XỬ LÝ GIAO DỊCH...</string>
+    <string name="msg_verifying_transaction">Xác thực giao dịch...</string>
+    <string name="msg_ticket_remaining_format">Rất tiếc, sự kiện này chỉ còn %1$d vé.</string>
+    <string name="msg_booking_save_error_format">Lỗi lưu đơn hàng: %1$s</string>
+    <string name="btn_confirm_order">Xác nhận &amp; Đặt hàng</string>
+    <string name="btn_continue">Tiếp tục</string>
+    <string name="msg_load_event_failed">Không thể tải thông tin sự kiện. Vui lòng thử lại.</string>
+
+    <!-- Register Activity -->
+    <string name="register_title">Đăng ký tài khoản</string>
+    <string name="register_subtitle">Tạo tài khoản mới để tiếp tục</string>
+    <string name="hint_full_name">Họ và tên</string>
+    <string name="hint_phone">Số điện thoại</string>
+    <string name="hint_confirm_password">Xác nhận mật khẩu</string>
+    <string name="hint_admin_code">Mã admin (tùy chọn)</string>
+    <string name="register_button">Đăng ký</string>
+
+    <!-- Tickets and Summary -->
+    <string name="label_order_summary">Tóm tắt đơn hàng</string>
+    <string name="label_total_payment">Tổng thanh toán</string>
+    <string name="loading_tickets">Đang tải vé...</string>
+    <string name="tickets_summary">Tổng quan vé</string>
+    <string name="tickets_view_all">Xem tất cả</string>
+    <string name="filter_active">Hiệu lực</string>
+    <string name="filter_used">Đã dùng</string>
+    <string name="filter_cancelled">Đã hủy</string>
+
+    <!-- Profile and Stats -->
+    <string name="emoji_profile">👤</string>
+    <string name="history_summary">Tổng kết lịch sử</string>
+    <string name="recent_transactions">Giao dịch gần đây</string>
+    <string name="stats_joined">Đã tham gia</string>
+    <string name="stats_upcoming">Sắp tới</string>
+    <string name="stats_points">Điểm thưởng</string>
+    <string name="menu_admin_title">Quyền Quản Trị</string>
 </resources>

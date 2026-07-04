@@ -1,97 +1,132 @@
 package vn.humg.hai.event_ticket_booking_app.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
-import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import vn.humg.hai.event_ticket_booking_app.R;
+import vn.humg.hai.event_ticket_booking_app.adapter.ReviewAdapter;
 import vn.humg.hai.event_ticket_booking_app.controller.EventController;
+import vn.humg.hai.event_ticket_booking_app.controller.ReviewController;
 import vn.humg.hai.event_ticket_booking_app.model.Event;
+import vn.humg.hai.event_ticket_booking_app.model.Review;
 
 public class EventDetailActivity extends AppCompatActivity {
-    public static final String EXTRA_EVENT_ID = "extra_event_id";
 
-    private final EventController eventController = new EventController();
-    private TextView tvEventTitle;
-    private TextView tvEventDate;
-    private TextView tvLocation;
-    private TextView tvDescription;
-    private TextView tvPrice;
-    private TextView tvLike;
-    private ImageView ivCover;
+    private EventController eventController;
+    private ReviewController reviewController;
+    
+    private String eventId;
+    private Event currentEvent;
+
+    private ImageView ivDetailImage;
+    private TextView tvTitle, tvDate, tvTime, tvLocation, tvDescription, tvPrice;
+    private MaterialButton btnBookNow;
+    
+    private RecyclerView rvReviews;
+    private ReviewAdapter reviewAdapter;
+    private final List<Review> reviewList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
-        ivCover = findViewById(R.id.iv_event_cover);
-        TextView tvBack = findViewById(R.id.tv_back);
-        tvEventTitle = findViewById(R.id.tv_event_title);
-        tvEventDate = findViewById(R.id.tv_event_date);
-        tvLocation = findViewById(R.id.tv_location);
-        tvDescription = findViewById(R.id.tv_event_description);
-        tvPrice = findViewById(R.id.tv_price);
-        tvLike = findViewById(R.id.tv_like);
-        MaterialButton btnBookNow = findViewById(R.id.btn_book_now);
+        eventId = getIntent().getStringExtra("EXTRA_EVENT_ID");
+        eventController = new EventController();
+        reviewController = new ReviewController();
 
-        tvBack.setOnClickListener(v -> finish());
-        tvLike.setOnClickListener(v -> tvLike.setTextColor(getResources().getColor(R.color.brand_primary)));
-        btnBookNow.setOnClickListener(v -> Toast.makeText(this, "Chức năng đặt vé đang cập nhật", Toast.LENGTH_SHORT).show());
+        initViews();
+        setupRecyclerView();
+        initEvents();
+        loadEventDetails();
+        loadReviews();
+    }
 
-        String eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
-        if (eventId != null && !eventId.isEmpty()) {
-            eventController.getEventById(eventId, this::bindEvent, error -> {
-                Toast.makeText(this, "Không tải được sự kiện: " + error, Toast.LENGTH_LONG).show();
-                bindFallback();
-            });
-        } else {
-            bindFallback();
+    private void initViews() {
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> finish());
+
+        ivDetailImage = findViewById(R.id.iv_detail_image);
+        tvTitle = findViewById(R.id.tv_detail_title);
+        tvDate = findViewById(R.id.tv_detail_date);
+        tvTime = findViewById(R.id.tv_detail_time);
+        tvLocation = findViewById(R.id.tv_detail_location);
+        tvDescription = findViewById(R.id.tv_detail_description);
+        tvPrice = findViewById(R.id.tv_detail_price);
+        btnBookNow = findViewById(R.id.btn_book_now);
+        rvReviews = findViewById(R.id.recycler_reviews);
+    }
+
+    private void setupRecyclerView() {
+        rvReviews.setLayoutManager(new LinearLayoutManager(this));
+        reviewAdapter = new ReviewAdapter(reviewList);
+        rvReviews.setAdapter(reviewAdapter);
+    }
+
+    private void initEvents() {
+        btnBookNow.setOnClickListener(v -> startBookingFlow());
+    }
+
+    private void startBookingFlow() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) {
+            Toast.makeText(this, getString(R.string.msg_login_required), Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+            return;
+        }
+
+        if (currentEvent != null) {
+            Intent intent = new Intent(this, SelectTicketActivity.class);
+            intent.putExtra("EXTRA_EVENT_ID", eventId);
+            startActivity(intent);
         }
     }
 
-    private void bindEvent(Event event) {
-        runOnUiThread(() -> {
-            if (event == null) {
-                bindFallback();
-                return;
+    private void loadEventDetails() {
+        if (eventId == null) { finish(); return; }
+        eventController.getEventById(eventId, event -> runOnUiThread(() -> {
+            if (event != null) {
+                currentEvent = event;
+                displayEvent(event);
             }
-            tvEventTitle.setText(event.getTitle());
-            tvEventDate.setText(formatTimestamp(event.getDate()));
-            tvLocation.setText(event.getLocation());
-            tvDescription.setText(event.getDescription());
-            tvPrice.setText(formatPrice(event.getPrice()));
-            if (event.getImage() != null && !event.getImage().isEmpty()) {
-                // Keep default image for now; custom image loading can be added later.
-            }
-        });
+        }), error -> runOnUiThread(() -> Toast.makeText(this, getString(R.string.msg_load_error), Toast.LENGTH_SHORT).show()));
     }
 
-    private void bindFallback() {
-        tvEventTitle.setText("Lễ Hội Âm Nhạc Horizon: Neon Nights 2024");
-        tvEventDate.setText("20:00, Thứ 6, 15/12/2024");
-        tvLocation.setText("Sân vận động Quốc gia Mỹ Đình, Hà Nội");
-        tvDescription.setText("Hãy sẵn sàng cho một đêm không thể quên tại Horizon Music Festival! Neon Nights 2024. Sự kiện âm nhạc điện tử lớn nhất trong năm sẽ quy tụ những tài năng hàng đầu cùng hiệu ứng ánh sáng và sân khấu hoành tráng. Với hệ thống âm thanh đỉnh cao và sân khấu sống động, bạn sẽ được trải nghiệm những màn trình diễn không thể nào quên.");
-        tvPrice.setText("850.000đ");
-        ivCover.setImageResource(R.drawable.img_logo_event_ticket_booking);
+    private void loadReviews() {
+        reviewController.getReviewsByEvent(eventId, reviews -> runOnUiThread(() -> {
+            reviewList.clear();
+            reviewList.addAll(reviews);
+            reviewAdapter.notifyDataSetChanged();
+        }), error -> {});
     }
 
-    private String formatTimestamp(Timestamp timestamp) {
-        if (timestamp == null) {
-            return "Thời gian chưa xác định";
+    private void displayEvent(Event event) {
+        tvTitle.setText(event.getTitle());
+        tvDescription.setText(event.getDescription());
+        tvLocation.setText(event.getLocation());
+        tvPrice.setText(String.format(Locale.getDefault(), getString(R.string.price_format), (long) event.getPrice()));
+
+        if (event.getDate() != null) {
+            SimpleDateFormat dateHeader = new SimpleDateFormat("dd 'Tháng' MM, yyyy", Locale.getDefault());
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            tvDate.setText(dateHeader.format(event.getDate().toDate()));
+            tvTime.setText(timeFormat.format(event.getDate().toDate()));
         }
-        Date date = timestamp.toDate();
-        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm, EEE, dd/MM/yyyy", Locale.getDefault());
-        return formatter.format(date);
-    }
 
-    private String formatPrice(double price) {
-        return String.format(Locale.getDefault(), "%,.0fđ", price);
+        Glide.with(this)
+                .load(event.getImage())
+                .placeholder(R.drawable.img_logo_event_ticket_booking)
+                .into(ivDetailImage);
     }
 }

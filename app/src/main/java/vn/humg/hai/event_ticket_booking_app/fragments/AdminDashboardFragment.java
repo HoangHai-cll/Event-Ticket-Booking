@@ -183,11 +183,11 @@ public class AdminDashboardFragment extends Fragment {
         
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                tvTotalRevenue.setText(formatVND(ft));
-                tvRevenueToday.setText(formatVND(ftd));
-                tvRevenueMonth.setText(formatVND(fm));
-                tvTotalTickets.setText(String.valueOf(ftk));
-                tvTotalUsers.setText(String.valueOf(ftu));
+                if (tvTotalRevenue != null) tvTotalRevenue.setText(formatVND(ft));
+                if (tvRevenueToday != null) tvRevenueToday.setText(formatVND(ftd));
+                if (tvRevenueMonth != null) tvRevenueMonth.setText(formatVND(fm));
+                if (tvTotalTickets != null) tvTotalTickets.setText(String.valueOf(ftk));
+                if (tvTotalUsers != null) tvTotalUsers.setText(String.valueOf(ftu));
             });
         }
 
@@ -204,12 +204,12 @@ public class AdminDashboardFragment extends Fragment {
             final int[] fs = stars;
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
-                    tvAvgRating.setText(String.format(Locale.getDefault(), "⭐ %.1f", avg));
-                    pb5.setProgress((int) (fs[5] * 100.0 / totalR));
-                    pb4.setProgress((int) (fs[4] * 100.0 / totalR));
-                    pb3.setProgress((int) (fs[3] * 100.0 / totalR));
-                    pb2.setProgress((int) (fs[2] * 100.0 / totalR));
-                    pb1.setProgress((int) (fs[1] * 100.0 / totalR));
+                    if (tvAvgRating != null) tvAvgRating.setText(String.format(Locale.getDefault(), "⭐ %.1f", avg));
+                    if (pb5 != null) pb5.setProgress((int) (fs[5] * 100.0 / totalR));
+                    if (pb4 != null) pb4.setProgress((int) (fs[4] * 100.0 / totalR));
+                    if (pb3 != null) pb3.setProgress((int) (fs[3] * 100.0 / totalR));
+                    if (pb2 != null) pb2.setProgress((int) (fs[2] * 100.0 / totalR));
+                    if (pb1 != null) pb1.setProgress((int) (fs[1] * 100.0 / totalR));
                 });
             }
         }
@@ -256,20 +256,30 @@ public class AdminDashboardFragment extends Fragment {
 
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                rvCategoryReport.setLayoutManager(new LinearLayoutManager(getContext()));
-                rvCategoryReport.setAdapter(new AdminCategoryReportAdapter(catStatsMap));
+                if (rvCategoryReport != null) {
+                    rvCategoryReport.setLayoutManager(new LinearLayoutManager(getContext()));
+                    rvCategoryReport.setAdapter(new AdminCategoryReportAdapter(catStatsMap));
+                }
 
-                rvTopEvents.setLayoutManager(new LinearLayoutManager(getContext()));
-                rvTopEvents.setAdapter(new AdminTopEventAdapter(topEv.subList(0, Math.min(topEv.size(), 5)), eventNames));
+                if (rvTopEvents != null) {
+                    rvTopEvents.setLayoutManager(new LinearLayoutManager(getContext()));
+                    rvTopEvents.setAdapter(new AdminTopEventAdapter(topEv.subList(0, Math.min(topEv.size(), 5)), eventNames));
+                }
 
-                rvTopUsers.setLayoutManager(new LinearLayoutManager(getContext()));
-                rvTopUsers.setAdapter(new AdminTopUserAdapter(topUs.subList(0, Math.min(topUs.size(), 5)), userNames));
+                if (rvTopUsers != null) {
+                    rvTopUsers.setLayoutManager(new LinearLayoutManager(getContext()));
+                    rvTopUsers.setAdapter(new AdminTopUserAdapter(topUs.subList(0, Math.min(topUs.size(), 5)), userNames));
+                }
 
-                rvRecentBookings.setLayoutManager(new LinearLayoutManager(getContext()));
-                rvRecentBookings.setAdapter(new TransactionAdapter(myBookings.subList(0, Math.min(myBookings.size(), 5))));
+                if (rvRecentBookings != null) {
+                    rvRecentBookings.setLayoutManager(new LinearLayoutManager(getContext()));
+                    rvRecentBookings.setAdapter(new TransactionAdapter(myBookings.subList(0, Math.min(myBookings.size(), 5))));
+                }
 
-                rvRecentReviews.setLayoutManager(new LinearLayoutManager(getContext()));
-                rvRecentReviews.setAdapter(new AdminReviewAdapter(myReviews.subList(0, Math.min(myReviews.size(), 3)), null));
+                if (rvRecentReviews != null) {
+                    rvRecentReviews.setLayoutManager(new LinearLayoutManager(getContext()));
+                    rvRecentReviews.setAdapter(new AdminReviewAdapter(myReviews.subList(0, Math.min(myReviews.size(), 3)), null));
+                }
                 
                 hideLoading();
             });

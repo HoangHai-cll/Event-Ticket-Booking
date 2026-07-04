@@ -41,7 +41,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         // 1. Hiển thị Mã đơn và Giá tiền (Sử dụng string resource)
         holder.tvId.setText(String.format(Locale.getDefault(), "#%s", booking.getBookingId().toUpperCase()));
         
-        String priceText = holder.itemView.getContext().getString(R.string.price_format, booking.getTotalPrice());
+        String priceText = holder.itemView.getContext().getString(R.string.price_format, (long) booking.getTotalPrice());
         holder.tvPrice.setText(priceText);
         
         // 2. Hiển thị số lượng vé

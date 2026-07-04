@@ -14,7 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
@@ -36,13 +35,14 @@ public class AdminAddEventActivity extends AppCompatActivity {
     private TextInputEditText edtTitle, edtDesc, edtLocation, edtPrice, edtTotalTickets, edtImage, edtGoogleMapsUrl, edtSpeakers;
     private AutoCompleteTextView spinnerCategory;
     private TextView tvDateTime, tvStep1Num, tvStep2Num, tvStep3Num, tvPreviewTitle, tvPreviewInfo;
+    private TextView tvStep1Text, tvStep2Text, tvStep3Text;
+    private View viewStep1Divider, viewStep2Divider;
     private CheckBox cbIsHot;
     private SwitchMaterial swIsFree;
     private MaterialButton btnPickDate, btnSave, btnNext, btnPrev;
     private LinearLayout layoutStep1, layoutStep2, layoutStep3;
     private TextInputLayout inputPrice;
     private ImageView ivPreview;
-    private Toolbar toolbar;
 
     private final EventController eventController = new EventController();
     private Calendar calendar = Calendar.getInstance();
@@ -68,16 +68,17 @@ public class AdminAddEventActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        toolbar = findViewById(R.id.toolbar_admin);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         // Stepper
         tvStep1Num = findViewById(R.id.tv_step_1_num);
         tvStep2Num = findViewById(R.id.tv_step_2_num);
         tvStep3Num = findViewById(R.id.tv_step_3_num);
+        tvStep1Text = findViewById(R.id.tv_step_1_text);
+        tvStep2Text = findViewById(R.id.tv_step_2_text);
+        tvStep3Text = findViewById(R.id.tv_step_3_text);
+        viewStep1Divider = findViewById(R.id.view_step1_divider);
+        viewStep2Divider = findViewById(R.id.view_step2_divider);
 
         // Layouts
         layoutStep1 = findViewById(R.id.layout_step_1);
@@ -118,7 +119,6 @@ public class AdminAddEventActivity extends AppCompatActivity {
     }
 
     private void initEvents() {
-        toolbar.setNavigationOnClickListener(v -> finish());
         btnPickDate.setOnClickListener(v -> showDateTimePicker());
         btnSave.setOnClickListener(v -> saveEvent());
         btnNext.setOnClickListener(v -> nextStep());
@@ -175,10 +175,24 @@ public class AdminAddEventActivity extends AppCompatActivity {
         btnNext.setVisibility(currentStep == 3 ? View.GONE : View.VISIBLE);
         btnSave.setVisibility(currentStep == 3 ? View.VISIBLE : View.GONE);
 
-        // Update colors
+        // Update colors for step numbers
         tvStep1Num.setBackgroundResource(currentStep >= 1 ? R.drawable.bg_chip : R.drawable.bg_chip_light);
+        tvStep1Num.setTextColor(currentStep >= 1 ? ContextCompat.getColor(this, R.color.white) : ContextCompat.getColor(this, R.color.text_muted));
+        
         tvStep2Num.setBackgroundResource(currentStep >= 2 ? R.drawable.bg_chip : R.drawable.bg_chip_light);
+        tvStep2Num.setTextColor(currentStep >= 2 ? ContextCompat.getColor(this, R.color.white) : ContextCompat.getColor(this, R.color.text_muted));
+        
         tvStep3Num.setBackgroundResource(currentStep >= 3 ? R.drawable.bg_chip : R.drawable.bg_chip_light);
+        tvStep3Num.setTextColor(currentStep >= 3 ? ContextCompat.getColor(this, R.color.white) : ContextCompat.getColor(this, R.color.text_muted));
+
+        // Update colors for step titles
+        if (tvStep1Text != null) tvStep1Text.setTextColor(currentStep >= 1 ? ContextCompat.getColor(this, R.color.white) : 0xAAFFFFFF);
+        if (tvStep2Text != null) tvStep2Text.setTextColor(currentStep >= 2 ? ContextCompat.getColor(this, R.color.white) : 0xAAFFFFFF);
+        if (tvStep3Text != null) tvStep3Text.setTextColor(currentStep >= 3 ? ContextCompat.getColor(this, R.color.white) : 0xAAFFFFFF);
+
+        // Update divider line colors
+        if (viewStep1Divider != null) viewStep1Divider.setBackgroundColor(currentStep >= 2 ? 0xFFFFFFFF : 0x66FFFFFF);
+        if (viewStep2Divider != null) viewStep2Divider.setBackgroundColor(currentStep >= 3 ? 0xFFFFFFFF : 0x66FFFFFF);
     }
 
     private void updatePreviewData() {

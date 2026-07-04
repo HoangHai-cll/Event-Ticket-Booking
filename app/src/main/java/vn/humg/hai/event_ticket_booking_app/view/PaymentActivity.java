@@ -65,6 +65,9 @@ public class PaymentActivity extends AppCompatActivity {
     // Step 3: Summary
     private TextView tvSummaryEventTitle, tvSummaryTicketCount, tvSummaryContact, tvSummaryPaymentMethod, tvSummaryTotalPrice;
 
+    // Step Indicators & Dividers
+    private View viewStep1Divider, viewStep2Divider;
+
     private AlertDialog loadingDialog;
     private int currentStep = 0; // 0: Info, 1: Payment, 2: Summary
 
@@ -89,7 +92,7 @@ public class PaymentActivity extends AppCompatActivity {
         loadUserData();
         setupEvents();
         updateStepperUI();
-        updatePaymentCardBorders(rgPaymentMethods.getCheckedRadioButtonId());
+        updatePaymentCardBorders(getSelectedPaymentMethodId());
     }
 
     private void initViews() {
@@ -104,6 +107,8 @@ public class PaymentActivity extends AppCompatActivity {
 
         viewFlipper = findViewById(R.id.view_flipper_checkout);
         btnNext = findViewById(R.id.btn_action_next);
+        viewStep1Divider = findViewById(R.id.view_step1_divider);
+        viewStep2Divider = findViewById(R.id.view_step2_divider);
 
         // Step 1
         edtName = findViewById(R.id.edt_checkout_name);
@@ -155,13 +160,15 @@ public class PaymentActivity extends AppCompatActivity {
 
     private void setupEvents() {
         // Handle Card Clicks to select the radio buttons
-        cardBank.setOnClickListener(v -> rbBank.setChecked(true));
-        cardMomo.setOnClickListener(v -> rbMomo.setChecked(true));
-        cardVnpay.setOnClickListener(v -> rbVnpay.setChecked(true));
-        cardCod.setOnClickListener(v -> rbCod.setChecked(true));
+        cardBank.setOnClickListener(v -> selectPaymentMethod(R.id.rb_bank));
+        cardMomo.setOnClickListener(v -> selectPaymentMethod(R.id.rb_momo));
+        cardVnpay.setOnClickListener(v -> selectPaymentMethod(R.id.rb_vnpay));
+        cardCod.setOnClickListener(v -> selectPaymentMethod(R.id.rb_cod));
 
-        // Listen for checked changes to update borders dynamically
-        rgPaymentMethods.setOnCheckedChangeListener((group, checkedId) -> updatePaymentCardBorders(checkedId));
+        rbBank.setOnClickListener(v -> selectPaymentMethod(R.id.rb_bank));
+        rbMomo.setOnClickListener(v -> selectPaymentMethod(R.id.rb_momo));
+        rbVnpay.setOnClickListener(v -> selectPaymentMethod(R.id.rb_vnpay));
+        rbCod.setOnClickListener(v -> selectPaymentMethod(R.id.rb_cod));
 
         btnNext.setOnClickListener(v -> {
             if (currentStep == 0) {
@@ -188,6 +195,22 @@ public class PaymentActivity extends AppCompatActivity {
                 startPaymentFlow();
             }
         });
+    }
+
+    private void selectPaymentMethod(int checkedId) {
+        rbBank.setChecked(checkedId == R.id.rb_bank);
+        rbMomo.setChecked(checkedId == R.id.rb_momo);
+        rbVnpay.setChecked(checkedId == R.id.rb_vnpay);
+        rbCod.setChecked(checkedId == R.id.rb_cod);
+        updatePaymentCardBorders(checkedId);
+    }
+
+    private int getSelectedPaymentMethodId() {
+        if (rbBank.isChecked()) return R.id.rb_bank;
+        if (rbMomo.isChecked()) return R.id.rb_momo;
+        if (rbVnpay.isChecked()) return R.id.rb_vnpay;
+        if (rbCod.isChecked()) return R.id.rb_cod;
+        return -1;
     }
 
     private void updatePaymentCardBorders(int checkedId) {
@@ -241,7 +264,7 @@ public class PaymentActivity extends AppCompatActivity {
     }
 
     private boolean validateStep2() {
-        int checkedId = rgPaymentMethods.getCheckedRadioButtonId();
+        int checkedId = getSelectedPaymentMethodId();
         if (checkedId == -1) {
             Toast.makeText(this, getString(R.string.msg_select_payment_required), Toast.LENGTH_SHORT).show();
             return false;
@@ -261,7 +284,7 @@ public class PaymentActivity extends AppCompatActivity {
             paymentMethod = getString(R.string.payment_method_free);
         } else {
             paymentMethod = getString(R.string.payment_method_bank);
-            int checkedId = rgPaymentMethods.getCheckedRadioButtonId();
+            int checkedId = getSelectedPaymentMethodId();
             if (checkedId == R.id.rb_momo) paymentMethod = getString(R.string.payment_method_momo);
             else if (checkedId == R.id.rb_vnpay) paymentMethod = getString(R.string.payment_method_vnpay);
             else if (checkedId == R.id.rb_cod) paymentMethod = getString(R.string.payment_method_cod);
@@ -279,19 +302,47 @@ public class PaymentActivity extends AppCompatActivity {
         tvStep1Text.setTextColor(ContextCompat.getColor(this, R.color.text_muted));
         tvStep2Text.setTextColor(ContextCompat.getColor(this, R.color.text_muted));
         tvStep3Text.setTextColor(ContextCompat.getColor(this, R.color.text_muted));
+        if (viewStep1Divider != null) {
+            viewStep1Divider.setBackgroundColor(ContextCompat.getColor(this, R.color.rule_border));
+        }
+        if (viewStep2Divider != null) {
+            viewStep2Divider.setBackgroundColor(ContextCompat.getColor(this, R.color.rule_border));
+        }
 
         // Active state
+        int purpleColor = ContextCompat.getColor(this, R.color.color_primary_periwinkle);
         if (currentStep >= 0) {
             tvStep1Icon.setBackgroundResource(R.drawable.bg_circle_purple);
-            tvStep1Text.setTextColor(ContextCompat.getColor(this, R.color.color_primary_periwinkle));
+            tvStep1Text.setTextColor(purpleColor);
         }
-        if (currentStep >= 1 && totalPrice > 0) {
-            tvStep2Icon.setBackgroundResource(R.drawable.bg_circle_purple);
-            tvStep2Text.setTextColor(ContextCompat.getColor(this, R.color.color_primary_periwinkle));
-        }
-        if (currentStep >= 2) {
-            tvStep3Icon.setBackgroundResource(R.drawable.bg_circle_purple);
-            tvStep3Text.setTextColor(ContextCompat.getColor(this, R.color.color_primary_periwinkle));
+        
+        if (totalPrice == 0) {
+            // For free events, Step 2 is bypassed
+            if (currentStep >= 2) {
+                tvStep3Icon.setBackgroundResource(R.drawable.bg_circle_purple);
+                tvStep3Text.setTextColor(purpleColor);
+                if (viewStep1Divider != null) {
+                    viewStep1Divider.setBackgroundColor(purpleColor);
+                }
+                if (viewStep2Divider != null) {
+                    viewStep2Divider.setBackgroundColor(purpleColor);
+                }
+            }
+        } else {
+            if (currentStep >= 1) {
+                tvStep2Icon.setBackgroundResource(R.drawable.bg_circle_purple);
+                tvStep2Text.setTextColor(purpleColor);
+                if (viewStep1Divider != null) {
+                    viewStep1Divider.setBackgroundColor(purpleColor);
+                }
+            }
+            if (currentStep >= 2) {
+                tvStep3Icon.setBackgroundResource(R.drawable.bg_circle_purple);
+                tvStep3Text.setTextColor(purpleColor);
+                if (viewStep2Divider != null) {
+                    viewStep2Divider.setBackgroundColor(purpleColor);
+                }
+            }
         }
 
         if (currentStep == 2) {
@@ -352,7 +403,7 @@ public class PaymentActivity extends AppCompatActivity {
         if (totalPrice == 0) {
             booking.setStatus("Confirmed");
         } else {
-            int checkedId = rgPaymentMethods.getCheckedRadioButtonId();
+            int checkedId = getSelectedPaymentMethodId();
             if (checkedId == R.id.rb_cod) {
                  booking.setStatus("Pending Payment");
             } else {

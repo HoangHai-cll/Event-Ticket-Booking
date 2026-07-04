@@ -19,13 +19,35 @@
             android:background="@color/brand_primary"
             android:paddingBottom="16dp">
 
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar_admin"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:navigationIcon="@android:drawable/ic_menu_revert"
-                app:title="Đăng sự kiện"
-                app:titleTextColor="@color/white" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp">
+
+                <ImageButton
+                    android:id="@+id/btn_back_custom"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_arrow_back"
+                    android:background="@drawable/bg_back_button"
+                    android:contentDescription="Back"
+                    android:scaleType="centerInside"
+                    app:tint="@color/white" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Đăng sự kiện"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:layout_marginEnd="40dp" />
+            </LinearLayout>
 
             <!-- Step Indicator -->
             <LinearLayout
@@ -38,21 +60,21 @@
 
                 <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                     <TextView android:id="@+id/tv_step_1_num" android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_chip" android:text="1" android:gravity="center" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thông tin" android:textSize="10sp" android:layout_marginTop="4dp" android:textColor="@color/white"/>
+                    <TextView android:id="@+id/tv_step_1_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thông tin" android:textSize="10sp" android:layout_marginTop="4dp" android:textColor="@color/white"/>
                 </LinearLayout>
 
-                <View android:layout_width="30dp" android:layout_height="1dp" android:background="#66FFFFFF" android:layout_marginBottom="16dp"/>
+                <View android:id="@+id/view_step1_divider" android:layout_width="30dp" android:layout_height="1dp" android:background="#66FFFFFF" android:layout_marginBottom="16dp"/>
 
                 <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                     <TextView android:id="@+id/tv_step_2_num" android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_chip_light" android:text="2" android:gravity="center" android:textColor="@color/text_muted" android:textSize="12sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vé &amp; Giá" android:textSize="10sp" android:layout_marginTop="4dp" android:textColor="#AAFFFFFF"/>
+                    <TextView android:id="@+id/tv_step_2_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vé &amp; Giá" android:textSize="10sp" android:layout_marginTop="4dp" android:textColor="#AAFFFFFF"/>
                 </LinearLayout>
 
-                <View android:layout_width="30dp" android:layout_height="1dp" android:background="#66FFFFFF" android:layout_marginBottom="16dp"/>
+                <View android:id="@+id/view_step2_divider" android:layout_width="30dp" android:layout_height="1dp" android:background="#66FFFFFF" android:layout_marginBottom="16dp"/>
 
                 <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                     <TextView android:id="@+id/tv_step_3_num" android:layout_width="24dp" android:layout_height="24dp" android:background="@drawable/bg_chip_light" android:text="3" android:gravity="center" android:textColor="@color/text_muted" android:textSize="12sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Xuất bản" android:textSize="10sp" android:layout_marginTop="4dp" android:textColor="#AAFFFFFF"/>
+                    <TextView android:id="@+id/tv_step_3_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Xuất bản" android:textSize="10sp" android:layout_marginTop="4dp" android:textColor="#AAFFFFFF"/>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

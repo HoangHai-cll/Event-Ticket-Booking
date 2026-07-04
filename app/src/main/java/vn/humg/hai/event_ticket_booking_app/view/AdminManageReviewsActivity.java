@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,7 +24,6 @@ public class AdminManageReviewsActivity extends AppCompatActivity {
     private final List<Review> reviewList = new ArrayList<>();
     private final ReviewController reviewController = new ReviewController();
     private final EventController eventController = new EventController();
-    private Toolbar toolbar;
     private String currentAdminId;
 
     @Override
@@ -41,12 +39,7 @@ public class AdminManageReviewsActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        toolbar = findViewById(R.id.toolbar_admin_reviews);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-        toolbar.setNavigationOnClickListener(v -> finish());
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         recyclerView = findViewById(R.id.recycler_admin_all_reviews);
     }

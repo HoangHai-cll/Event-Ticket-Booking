@@ -2,6 +2,7 @@ package vn.humg.hai.event_ticket_booking_app.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +20,7 @@ import vn.humg.hai.event_ticket_booking_app.R;
 import vn.humg.hai.event_ticket_booking_app.adapter.ReviewAdapter;
 import vn.humg.hai.event_ticket_booking_app.controller.EventController;
 import vn.humg.hai.event_ticket_booking_app.controller.ReviewController;
+import vn.humg.hai.event_ticket_booking_app.controller.UserController;
 import vn.humg.hai.event_ticket_booking_app.model.Event;
 import vn.humg.hai.event_ticket_booking_app.model.Review;
 
@@ -29,6 +31,7 @@ public class EventDetailActivity extends AppCompatActivity {
     
     private String eventId;
     private Event currentEvent;
+    private final UserController userController = new UserController();
 
     private ImageView ivDetailImage;
     private TextView tvTitle, tvDate, tvTime, tvLocation, tvDescription, tvPrice;
@@ -50,12 +53,24 @@ public class EventDetailActivity extends AppCompatActivity {
         initViews();
         setupRecyclerView();
         initEvents();
+        checkUserRoleAndAdjustUI();
         loadEventDetails();
         loadReviews();
     }
 
+    private void checkUserRoleAndAdjustUI() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid != null) {
+            userController.getUserById(uid, user -> {
+                if (user != null && "admin".equalsIgnoreCase(user.getRole())) {
+                    runOnUiThread(() -> btnBookNow.setVisibility(View.GONE));
+                }
+            }, e -> {});
+        }
+    }
+
     private void initViews() {
-        findViewById(R.id.btn_back_custom).setOnClickListener(v -> finish());
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         ivDetailImage = findViewById(R.id.iv_detail_image);
         tvTitle = findViewById(R.id.tv_detail_title);

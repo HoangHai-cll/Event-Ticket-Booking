@@ -6,7 +6,6 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -31,7 +30,6 @@ public class ReviewSubmitActivity extends AppCompatActivity {
     private RatingBar rbRating;
     private TextInputEditText edtComment;
     private MaterialButton btnSubmit;
-    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +52,7 @@ public class ReviewSubmitActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        toolbar = findViewById(R.id.toolbar_review);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
         ivEventImage = findViewById(R.id.iv_review_event_image);
         tvEventTitle = findViewById(R.id.tv_review_event_title);
         rbRating = findViewById(R.id.rb_submit_rating);
@@ -68,8 +61,6 @@ public class ReviewSubmitActivity extends AppCompatActivity {
     }
 
     private void initEvents() {
-        toolbar.setNavigationOnClickListener(v -> finish());
-
         btnSubmit.setOnClickListener(v -> submitReview());
     }
 

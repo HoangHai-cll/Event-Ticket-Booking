@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -38,7 +37,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private ProgressBar pb5, pb4, pb3, pb2, pb1;
     private RecyclerView rvCategoryReport, rvRecentReviews, rvTopEvents, rvTopUsers, rvRecentBookings;
     private SwipeRefreshLayout swipeRefresh;
-    private Toolbar toolbar;
 
     private final BookingController bookingController = new BookingController();
     private final EventController eventController = new EventController();
@@ -55,12 +53,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        toolbar = findViewById(R.id.toolbar_admin_dashboard);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-        toolbar.setNavigationOnClickListener(v -> finish());
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         tvWelcomeName = findViewById(R.id.tv_admin_welcome_name);
         tvTotalRevenue = findViewById(R.id.tv_admin_total_revenue);

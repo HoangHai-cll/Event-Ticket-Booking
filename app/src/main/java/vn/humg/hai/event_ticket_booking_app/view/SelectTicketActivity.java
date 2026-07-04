@@ -10,7 +10,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import java.text.SimpleDateFormat;
@@ -38,7 +37,6 @@ public class SelectTicketActivity extends AppCompatActivity {
     private EditText etVoucher;
     private TextView btnApplyVoucher;
     private LinearLayout layoutDiscount;
-    private Toolbar toolbar;
 
     private final EventController eventController = new EventController();
 
@@ -59,13 +57,7 @@ public class SelectTicketActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        toolbar = findViewById(R.id.toolbar_select_ticket);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.label_select_ticket);
-        }
-        toolbar.setNavigationOnClickListener(v -> finish());
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         ivEventImage = findViewById(R.id.iv_select_event_image);
         tvEventTitle = findViewById(R.id.tv_select_event_title);

@@ -38,7 +38,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private AutoCompleteTextView spinnerGender;
     private ChipGroup chipGroupInterests;
     private ImageView ivAvatar;
-    private FloatingActionButton fabChangeAvatar;
+    private View fabChangeAvatar;
     private MaterialButton btnSave;
 
     private final UserController userController = new UserController();

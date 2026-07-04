@@ -32,7 +32,7 @@ public class HelpCenterActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        findViewById(R.id.btn_back_custom).setOnClickListener(v -> finish());
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         edtSearchFaq = findViewById(R.id.edt_search_faq);
 

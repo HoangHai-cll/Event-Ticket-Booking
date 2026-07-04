@@ -37,7 +37,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        findViewById(R.id.btn_back_custom).setOnClickListener(v -> finish());
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         switchAppNotification = findViewById(R.id.switch_app_notification);
         switchPromoEmail = findViewById(R.id.switch_promo_email);

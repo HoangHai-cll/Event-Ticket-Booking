@@ -37,7 +37,7 @@ public class TermsPolicyActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        findViewById(R.id.btn_back_custom).setOnClickListener(v -> finish());
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         tvTitle = findViewById(R.id.tv_terms_policy_title);
         tvContent = findViewById(R.id.tv_terms_policy_content);

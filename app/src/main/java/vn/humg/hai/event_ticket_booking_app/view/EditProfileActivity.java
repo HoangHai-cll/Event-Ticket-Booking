@@ -66,7 +66,7 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        findViewById(R.id.btn_back_custom).setOnClickListener(v -> finish());
+        findViewById(R.id.btn_back_custom).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         edtFullname = findViewById(R.id.edt_edit_fullname);
         edtEmail = findViewById(R.id.edt_edit_email);

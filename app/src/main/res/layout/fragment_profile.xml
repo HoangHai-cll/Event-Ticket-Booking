@@ -209,12 +209,13 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground">
-                <TextView
+                <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:gravity="center"
-                    android:text="@string/emoji_profile_nav"
-                    android:background="@drawable/bg_circle_gray" />
+                    android:padding="6dp"
+                    android:src="@drawable/ic_profile_nav"
+                    android:background="@drawable/bg_circle_gray"
+                    app:tint="@color/text_muted" />
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -223,12 +224,11 @@
                     android:text="@string/menu_edit"
                     android:textColor="@color/ink_dark"
                     android:textStyle="bold" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textColor="@color/text_muted"
-                    android:textSize="20sp" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/text_muted" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/menu_change_password"
@@ -240,12 +240,13 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground">
-                <TextView
+                <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:gravity="center"
-                    android:text="🔒"
-                    android:background="@drawable/bg_circle_gray" />
+                    android:padding="6dp"
+                    android:src="@drawable/ic_lock"
+                    android:background="@drawable/bg_circle_gray"
+                    app:tint="@color/text_muted" />
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -254,12 +255,11 @@
                     android:text="@string/menu_password"
                     android:textColor="@color/ink_dark"
                     android:textStyle="bold" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textColor="@color/text_muted"
-                    android:textSize="20sp" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/text_muted" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/menu_settings"
@@ -271,12 +271,13 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground">
-                <TextView
+                <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:gravity="center"
-                    android:text="⚙"
-                    android:background="@drawable/bg_circle_gray" />
+                    android:padding="6dp"
+                    android:src="@drawable/ic_settings"
+                    android:background="@drawable/bg_circle_gray"
+                    app:tint="@color/text_muted" />
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -285,12 +286,11 @@
                     android:text="@string/menu_settings"
                     android:textColor="@color/ink_dark"
                     android:textStyle="bold" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textColor="@color/text_muted"
-                    android:textSize="20sp" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/text_muted" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/menu_support"
@@ -302,12 +302,13 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground">
-                <TextView
+                <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:gravity="center"
-                    android:text="❓"
-                    android:background="@drawable/bg_circle_gray" />
+                    android:padding="6dp"
+                    android:src="@drawable/ic_support"
+                    android:background="@drawable/bg_circle_gray"
+                    app:tint="@color/text_muted" />
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -316,12 +317,11 @@
                     android:text="@string/menu_support"
                     android:textColor="@color/ink_dark"
                     android:textStyle="bold" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textColor="@color/text_muted"
-                    android:textSize="20sp" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/text_muted" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/menu_terms"
@@ -333,12 +333,13 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground">
-                <TextView
+                <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:gravity="center"
-                    android:text="📄"
-                    android:background="@drawable/bg_circle_gray" />
+                    android:padding="6dp"
+                    android:src="@drawable/ic_terms"
+                    android:background="@drawable/bg_circle_gray"
+                    app:tint="@color/text_muted" />
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -347,12 +348,11 @@
                     android:text="@string/menu_terms"
                     android:textColor="@color/ink_dark"
                     android:textStyle="bold" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textColor="@color/text_muted"
-                    android:textSize="20sp" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/text_muted" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/menu_admin"
@@ -365,12 +365,13 @@
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground"
                 android:visibility="gone">
-                <TextView
+                <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:gravity="center"
-                    android:text="👑"
-                    android:background="@drawable/bg_circle_gray" />
+                    android:padding="6dp"
+                    android:src="@drawable/ic_admin"
+                    android:background="@drawable/bg_circle_gray"
+                    app:tint="@color/text_muted" />
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -379,12 +380,11 @@
                     android:text="@string/menu_admin_title"
                     android:textColor="@color/ink_dark"
                     android:textStyle="bold" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textColor="@color/text_muted"
-                    android:textSize="20sp" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/text_muted" />
             </LinearLayout>
         </LinearLayout>
 

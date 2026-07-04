@@ -22,6 +22,10 @@ import vn.humg.hai.event_ticket_booking_app.model.Booking;
 import vn.humg.hai.event_ticket_booking_app.view.LoginActivity;
 import vn.humg.hai.event_ticket_booking_app.view.MainActivity;
 import vn.humg.hai.event_ticket_booking_app.view.TermsPolicyActivity;
+import vn.humg.hai.event_ticket_booking_app.view.EditProfileActivity;
+import vn.humg.hai.event_ticket_booking_app.view.ChangePasswordActivity;
+import vn.humg.hai.event_ticket_booking_app.view.SettingsActivity;
+import vn.humg.hai.event_ticket_booking_app.view.HelpCenterActivity;
 
 public class ProfileFragment extends Fragment {
 
@@ -64,10 +68,10 @@ public class ProfileFragment extends Fragment {
     }
 
     private void initEvents() {
-        menuEdit.setOnClickListener(v -> Toast.makeText(getContext(), "Chỉnh sửa hồ sơ", Toast.LENGTH_SHORT).show());
-        menuPassword.setOnClickListener(v -> Toast.makeText(getContext(), "Đổi mật khẩu", Toast.LENGTH_SHORT).show());
-        menuSettings.setOnClickListener(v -> Toast.makeText(getContext(), "Cài đặt ứng dụng", Toast.LENGTH_SHORT).show());
-        menuSupport.setOnClickListener(v -> Toast.makeText(getContext(), "Trung tâm hỗ trợ", Toast.LENGTH_SHORT).show());
+        menuEdit.setOnClickListener(v -> startActivity(new Intent(getContext(), EditProfileActivity.class)));
+        menuPassword.setOnClickListener(v -> startActivity(new Intent(getContext(), ChangePasswordActivity.class)));
+        menuSettings.setOnClickListener(v -> startActivity(new Intent(getContext(), SettingsActivity.class)));
+        menuSupport.setOnClickListener(v -> startActivity(new Intent(getContext(), HelpCenterActivity.class)));
         menuTerms.setOnClickListener(v -> startActivity(new Intent(getContext(), TermsPolicyActivity.class)));
         
         if (menuAdmin != null) {
@@ -89,6 +93,13 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadUserProfile();
+        calculateUserStats();
+    }
+
     private void loadUserProfile() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
@@ -104,10 +115,19 @@ public class ProfileFragment extends Fragment {
                             menuAdmin.setVisibility("admin".equalsIgnoreCase(user.getRole()) ? View.VISIBLE : View.GONE);
                         }
 
-                        Glide.with(this)
-                                .load(R.drawable.img_logo_event_ticket_booking)
-                                .circleCrop()
-                                .into(ivAvatar);
+                        String avatarUrl = user.getAvatarName();
+                        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                            Glide.with(ProfileFragment.this)
+                                    .load(avatarUrl)
+                                    .circleCrop()
+                                    .placeholder(R.drawable.img_logo_event_ticket_booking)
+                                    .into(ivAvatar);
+                        } else {
+                            Glide.with(ProfileFragment.this)
+                                    .load(R.drawable.img_logo_event_ticket_booking)
+                                    .circleCrop()
+                                    .into(ivAvatar);
+                        }
                     }
                 });
             }

@@ -4,21 +4,42 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:background="@drawable/bg_radial_festive_light">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="2dp">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_admin_dashboard"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/white"
-            app:title="@string/admin_dashboard_title"
-            app:titleTextColor="@color/ink_dark"
-            app:navigationIcon="@android:drawable/ic_menu_revert" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:background="@color/white">
+
+            <ImageButton
+                android:id="@+id/btn_back_custom"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="@drawable/bg_back_button"
+                android:contentDescription="Back"
+                android:scaleType="centerInside" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/admin_dashboard_title"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/ink_dark"
+                android:gravity="center"
+                android:layout_marginEnd="40dp" />
+        </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -383,6 +404,16 @@
                             android:layout_columnWeight="1"
                             android:text="@string/admin_manage_reviews"
                             app:icon="@android:drawable/btn_star_big_on"
+                            android:textAllCaps="false"
+                            android:gravity="start|center_vertical"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_admin_manage_vouchers"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="Quản lý Voucher"
+                            app:icon="@android:drawable/ic_menu_send"
                             android:textAllCaps="false"
                             android:gravity="start|center_vertical"/>
                     </GridLayout>

@@ -9,10 +9,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import vn.humg.hai.event_ticket_booking_app.view.MainActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,6 +51,7 @@ public class AdminDashboardFragment extends Fragment {
     private ProgressBar pb5, pb4, pb3, pb2, pb1;
     private RecyclerView rvCategoryReport, rvRecentReviews, rvTopEvents, rvTopUsers, rvRecentBookings;
     private SwipeRefreshLayout swipeRefresh;
+    private Toolbar toolbar;
 
     private final BookingController bookingController = new BookingController();
     private final EventController eventController = new EventController();
@@ -63,11 +66,13 @@ public class AdminDashboardFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_admin_dashboard, container, false);
         currentAdminId = FirebaseAuth.getInstance().getUid();
         initViews(view);
+        initEvents();
         setupDashboard();
         return view;
     }
 
     private void initViews(View view) {
+        toolbar = view.findViewById(R.id.toolbar_admin_dashboard);
         tvWelcomeName = view.findViewById(R.id.tv_admin_welcome_name);
         tvTotalRevenue = view.findViewById(R.id.tv_admin_total_revenue);
         tvTotalTickets = view.findViewById(R.id.tv_admin_total_tickets);
@@ -97,14 +102,37 @@ public class AdminDashboardFragment extends Fragment {
         setupClick(view, R.id.btn_admin_go_to_add_event, AdminAddEventActivity.class);
         setupClick(view, R.id.btn_admin_manage_events, AdminManageEventsActivity.class);
         setupClick(view, R.id.btn_admin_manage_bookings, AdminManageBookingsActivity.class);
-        setupClick(view, R.id.btn_admin_manage_users, AdminManageUsersActivity.class);
         setupClick(view, R.id.btn_admin_manage_reviews_link, AdminManageReviewsActivity.class);
+    }
+
+    private void initEvents() {
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).openDrawer();
+                }
+            });
+        }
     }
 
     private void setupClick(View parent, int viewId, Class<?> activityClass) {
         View v = parent.findViewById(viewId);
         if (v != null) {
             v.setOnClickListener(view -> startActivity(new Intent(getContext(), activityClass)));
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setupDashboard();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            setupDashboard();
         }
     }
 

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="320dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@drawable/bg_dialog"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center">
+
+    <!-- Celebration Icon / Illustration -->
+    <TextView
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:text="👑"
+        android:textSize="48sp"
+        android:gravity="center"
+        android:background="@drawable/bg_circle_purple"
+        android:backgroundTint="#FFF2EB"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="THĂNG HẠNG THÀNH VIÊN!"
+        android:textColor="@color/brand_primary"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <!-- Tier Name Tag -->
+    <TextView
+        android:id="@+id/tv_level_up_tier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="HẠNG: ĐỒNG"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:background="@drawable/bg_badge_tier"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="6dp" />
+
+    <!-- Congratulation description -->
+    <TextView
+        android:id="@+id/tv_level_up_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Chúc mừng bạn đã thăng cấp thành công! Nhận ngay các voucher đặc quyền ưu đãi đã được gửi trực tiếp vào ví của bạn. Bạn đã được cấp quyền ưu tiên mua vé cho các sự kiện độc quyền."
+        android:textColor="@color/ink_dark"
+        android:textSize="13sp"
+        android:lineSpacingMultiplier="1.2"
+        android:gravity="center" />
+
+    <!-- Action Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_level_up_got_it"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="24dp"
+        android:text="Tập trung tiếp tục"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:cornerRadius="24dp"
+        android:backgroundTint="@color/brand_primary"
+        android:stateListAnimator="@animator/btn_press_scale" />
+
+</LinearLayout>

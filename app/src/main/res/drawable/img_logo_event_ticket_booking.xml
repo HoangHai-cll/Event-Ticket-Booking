@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <!-- Ticket Card Outline with Side Circular Cutouts - Orange Brand Color (#FF5C00) -->
+    <path
+        android:pathData="M12,20 C12,15.58 15.58,12 20,12 H76 C80.42,12 84,15.58 84,20 V38 C80.69,38 78,40.69 78,44 C78,47.31 80.69,50 84,50 V76 C84,80.42 80.42,84 76,84 H20 C15.58,84 12,80.42 12,76 V50 C15.31,50 18,47.31 18,44 C18,40.69 15.31,38 12,38 Z"
+        android:fillColor="#FF5C00"/>
+        
+    <!-- Ticket Inner Border / Dotted Line -->
+    <path
+        android:pathData="M24,24 H72"
+        android:strokeColor="#FFD200"
+        android:strokeWidth="2"/>
+        
+    <!-- Ticket Star Emblem -->
+    <path
+        android:pathData="M48,28 L51.5,35 L59,36 L53.5,41.5 L55,49 L48,45 L41,49 L42.5,41.5 L37,36 L44.5,35 Z"
+        android:fillColor="#FFD200"/>
+        
+    <!-- Ticket Text Bar Elements -->
+    <path
+        android:pathData="M32,58 H64 M32,66 H64 M40,74 H56"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"/>
+</vector>

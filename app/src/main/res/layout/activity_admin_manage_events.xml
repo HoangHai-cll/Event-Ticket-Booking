@@ -12,13 +12,35 @@
         android:background="@color/white"
         app:elevation="0dp">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_admin_manage"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:navigationIcon="@android:drawable/ic_menu_revert"
-            app:title="Event Management"
-            app:titleTextColor="@color/brand_primary" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:background="@color/white">
+
+            <ImageButton
+                android:id="@+id/btn_back_custom"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="@drawable/bg_back_button"
+                android:contentDescription="Back"
+                android:scaleType="centerInside" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/admin_manage_events"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/brand_primary"
+                android:gravity="center"
+                android:layout_marginEnd="40dp" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -30,7 +52,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Event Management"
+                android:text="@string/admin_manage_events"
                 android:textColor="@color/ink_dark"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -39,7 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Review and manage your professional event portfolio."
+                android:text="Xem lại và quản lý danh sách sự kiện của bạn."
                 android:textColor="@color/text_muted"
                 android:textSize="14sp" />
 
@@ -62,7 +84,7 @@
                         android:background="@drawable/bg_chip"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
-                        android:text="All Events"
+                        android:text="Tất cả"
                         android:textColor="@color/white"
                         android:textSize="12sp"
                         android:textStyle="bold" />
@@ -75,7 +97,7 @@
                         android:background="@drawable/bg_chip_light"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
-                        android:text="Active"
+                        android:text="Hoạt động"
                         android:textColor="@color/ink_dark"
                         android:textSize="12sp" />
 
@@ -87,7 +109,7 @@
                         android:background="@drawable/bg_chip_light"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
-                        android:text="Drafts"
+                        android:text="Bản nháp"
                         android:textColor="@color/ink_dark"
                         android:textSize="12sp" />
 
@@ -99,7 +121,7 @@
                         android:background="@drawable/bg_chip_light"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
-                        android:text="Completed"
+                        android:text="Đã xong"
                         android:textColor="@color/ink_dark"
                         android:textSize="12sp" />
                 </LinearLayout>

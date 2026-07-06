@@ -84,7 +84,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:paddingBottom="96dp"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -101,7 +103,14 @@
                 android:visibility="visible">
 
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ảnh bìa sự kiện" android:textStyle="bold" android:textSize="13sp" android:layout_marginBottom="8dp"/>
+                
+                <RadioGroup android:id="@+id/rg_image_source" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <RadioButton android:id="@+id/rb_image_upload" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tải ảnh lên" android:checked="true"/>
+                    <RadioButton android:id="@+id/rb_image_link" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dán Link URL" android:layout_marginStart="16dp"/>
+                </RadioGroup>
+
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_admin_image_upload"
                     android:layout_width="match_parent"
                     android:layout_height="160dp"
                     app:cardCornerRadius="16dp"
@@ -110,18 +119,20 @@
                     app:strokeWidth="1dp">
                     <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
                         <ImageView android:id="@+id/iv_admin_preview_image" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" />
-                        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true" android:gravity="center" android:orientation="vertical">
+                        <LinearLayout android:id="@+id/layout_upload_placeholder" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true" android:gravity="center" android:orientation="vertical">
                             <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/ic_menu_camera" app:tint="@color/brand_primary"/>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dán URL ảnh xuống dưới" android:textColor="@color/brand_primary" android:textSize="12sp" android:layout_marginTop="8dp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nhấn để tải ảnh lên" android:textColor="@color/brand_primary" android:textSize="12sp" android:layout_marginTop="8dp"/>
                         </LinearLayout>
                     </RelativeLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layout_admin_image_url"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"
                     android:hint="URL Ảnh bìa">
                     <com.google.android.material.textfield.TextInputEditText android:id="@+id/edt_admin_image" android:layout_width="match_parent" android:layout_height="wrap_content" />
                 </com.google.android.material.textfield.TextInputLayout>
@@ -179,9 +190,30 @@
                     android:hint="Diễn giả / Ban tổ chức">
                     <com.google.android.material.textfield.TextInputEditText android:id="@+id/edt_admin_speakers" android:layout_width="match_parent" android:layout_height="wrap_content" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hạng thành viên yêu cầu 🔒"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="4dp" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layout_admin_required_tier"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Chọn hạng tối thiểu để mua vé">
+                    <AutoCompleteTextView
+                        android:id="@+id/spinner_admin_required_tier"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
-            <!-- STEP 2: VÉ & GIÁ -->
+            <!-- STEP 2: HẠNG VÉ & GIÁ -->
             <LinearLayout
                 android:id="@+id/layout_step_2"
                 android:layout_width="match_parent"
@@ -190,36 +222,130 @@
                 android:padding="20dp"
                 android:visibility="gone">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Hạng vé"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="@color/ink_dark" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Thêm ít nhất 1 hạng vé"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_muted" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_add_tier"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="+ Thêm hạng"
+                        android:textSize="12sp"
+                        app:strokeColor="@color/brand_primary"
+                        app:cornerRadius="10dp" />
+                </LinearLayout>
+
+                <!-- Container cho các hạng vé được thêm vào dynamically -->
+                <LinearLayout
+                    android:id="@+id/container_tiers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <!-- Sự kiện miễn phí (Tách riêng ra 1 mục) -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" app:cardCornerRadius="16dp" app:strokeColor="@color/rule_border" app:strokeWidth="1dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
-
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Sự kiện miễn phí" android:textStyle="bold" android:textSize="15sp"/>
-                            <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/sw_admin_is_free" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/input_admin_price"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                            android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Giá vé (VNĐ) *">
-                            <com.google.android.material.textfield.TextInputEditText android:id="@+id/edt_admin_price" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                            android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Tổng số lượng vé *">
-                            <com.google.android.material.textfield.TextInputEditText android:id="@+id/edt_admin_total_tickets" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thời gian tổ chức *" android:textStyle="bold" android:layout_marginTop="20dp"/>
-                        <TextView android:id="@+id/tv_admin_datetime" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Chưa chọn thời gian" android:textColor="@color/brand_primary" android:gravity="center" android:padding="12dp" android:background="@drawable/bg_chip_light" android:textStyle="bold"/>
-                        <com.google.android.material.button.MaterialButton android:id="@+id/btn_admin_pick_date" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Chọn ngày và giờ" style="@style/Widget.MaterialComponents.Button.OutlinedButton" app:strokeColor="@color/brand_primary" app:cornerRadius="12dp"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/rule_border"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Sự kiện miễn phí 🎟️"
+                            android:textStyle="bold"
+                            android:textSize="15sp"
+                            android:textColor="@color/ink_dark"/>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/sw_admin_is_free"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <CheckBox android:id="@+id/cb_admin_is_hot" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Đánh dấu là Sự kiện Hot 🔥" android:buttonTint="@color/brand_primary" />
+                <!-- Thời gian tổ chức -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/rule_border"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Thời gian tổ chức *"
+                            android:textStyle="bold"
+                            android:textColor="@color/ink_dark"/>
+                        <TextView
+                            android:id="@+id/tv_admin_datetime"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Chưa chọn thời gian"
+                            android:textColor="@color/brand_primary"
+                            android:gravity="center"
+                            android:padding="12dp"
+                            android:background="@drawable/bg_chip_light"
+                            android:textStyle="bold"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_admin_pick_date"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Chọn ngày và giờ"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            app:strokeColor="@color/brand_primary"
+                            app:cornerRadius="12dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <CheckBox
+                    android:id="@+id/cb_admin_is_hot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="Đánh dấu là Sự kiện Hot 🔥"
+                    android:buttonTint="@color/brand_primary" />
             </LinearLayout>
 
             <!-- STEP 3: XUẤT BẢN -->
@@ -232,7 +358,7 @@
                 android:gravity="center"
                 android:visibility="gone">
 
-                <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@android:drawable/checkbox_on_background" app:tint="#10B981"/>
+                <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/ic_success_check" />
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sẵn sàng xuất bản!" android:textStyle="bold" android:textSize="20sp" android:layout_marginTop="16dp" android:textColor="@color/ink_dark"/>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vui lòng kiểm tra kỹ các thông tin trước khi đưa sự kiện lên hệ thống công khai." android:gravity="center" android:layout_marginTop="8dp" android:textColor="@color/text_muted"/>
 
@@ -253,7 +379,16 @@
     </androidx.core.widget.NestedScrollView>
 
     <!-- Bottom Actions -->
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom" android:padding="16dp" android:background="@color/white" android:elevation="8dp" android:orientation="horizontal">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_gravity="bottom"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        android:background="@color/white"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
         <com.google.android.material.button.MaterialButton android:id="@+id/btn_admin_prev" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:text="Quay lại" style="@style/Widget.MaterialComponents.Button.TextButton" android:visibility="invisible"/>
         <com.google.android.material.button.MaterialButton android:id="@+id/btn_admin_next" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="2" android:layout_marginStart="12dp" android:text="Tiếp tục" app:cornerRadius="14dp"/>
         <com.google.android.material.button.MaterialButton android:id="@+id/btn_admin_save" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="2" android:layout_marginStart="12dp" android:text="Đăng sự kiện ngay" app:cornerRadius="14dp" android:visibility="gone" app:backgroundTint="#10B981"/>

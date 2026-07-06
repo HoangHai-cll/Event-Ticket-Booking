@@ -4,18 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:background="@android:color/transparent">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
         android:elevation="2dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar_admin_dashboard"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/white"
+            android:background="@android:color/transparent"
+            app:navigationIcon="@drawable/ic_menu"
             app:title="@string/admin_dashboard_title"
             app:titleTextColor="@color/ink_dark" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -148,50 +150,52 @@
                 <GridLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:columnCount="2"
+                    android:columnCount="1"
                     android:layout_marginTop="12dp">
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_admin_go_to_add_event"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
                         android:text="@string/admin_add_event"
-                        app:icon="@android:drawable/ic_menu_add"
+                        app:icon="@drawable/ic_add"
                         android:textAllCaps="false"
-                        android:gravity="start|center_vertical"/>
+                        android:gravity="start|center_vertical"
+                        android:layout_marginVertical="4dp"
+                        android:padding="12dp"
+                        android:backgroundTint="@color/white"
+                        app:cornerRadius="8dp"
+                        android:elevation="1dp" />
+                        
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_admin_manage_events"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
                         android:text="@string/admin_manage_events"
-                        app:icon="@android:drawable/ic_menu_edit"
+                        app:icon="@drawable/ic_edit_pencil"
                         android:textAllCaps="false"
-                        android:gravity="start|center_vertical"/>
+                        android:gravity="start|center_vertical"
+                        android:layout_marginVertical="4dp"
+                        android:padding="12dp"
+                        android:backgroundTint="@color/white"
+                        app:cornerRadius="8dp"
+                        android:elevation="1dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_admin_manage_bookings"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
                         android:text="@string/admin_manage_bookings"
-                        app:icon="@android:drawable/ic_menu_agenda"
+                        app:icon="@drawable/ic_nav_tickets"
                         android:textAllCaps="false"
-                        android:gravity="start|center_vertical"/>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_admin_manage_users"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/admin_manage_users"
-                        app:icon="@android:drawable/ic_menu_my_calendar"
-                        android:textAllCaps="false"
-                        android:gravity="start|center_vertical"/>
+                        android:gravity="start|center_vertical"
+                        android:layout_marginVertical="4dp"
+                        android:padding="12dp"
+                        android:backgroundTint="@color/white"
+                        app:cornerRadius="8dp"
+                        android:elevation="1dp" />
                 </GridLayout>
 
                 <!-- PHẦN 3: GIAO DỊCH MỚI NHẤT -->

@@ -18,7 +18,14 @@ import com.google.firebase.auth.FirebaseAuth;
 import vn.humg.hai.event_ticket_booking_app.R;
 import vn.humg.hai.event_ticket_booking_app.controller.BookingController;
 import vn.humg.hai.event_ticket_booking_app.controller.UserController;
+import vn.humg.hai.event_ticket_booking_app.controller.VoucherController;
 import vn.humg.hai.event_ticket_booking_app.model.Booking;
+import vn.humg.hai.event_ticket_booking_app.model.Voucher;
+import vn.humg.hai.event_ticket_booking_app.adapter.VoucherAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import java.util.ArrayList;
+import java.util.List;
 import vn.humg.hai.event_ticket_booking_app.view.LoginActivity;
 import vn.humg.hai.event_ticket_booking_app.view.MainActivity;
 import vn.humg.hai.event_ticket_booking_app.view.TermsPolicyActivity;
@@ -26,15 +33,19 @@ import vn.humg.hai.event_ticket_booking_app.view.EditProfileActivity;
 import vn.humg.hai.event_ticket_booking_app.view.ChangePasswordActivity;
 import vn.humg.hai.event_ticket_booking_app.view.SettingsActivity;
 import vn.humg.hai.event_ticket_booking_app.view.HelpCenterActivity;
+import vn.humg.hai.event_ticket_booking_app.view.MembershipDetailsActivity;
 
 public class ProfileFragment extends Fragment {
 
     private final UserController userController = new UserController();
     private final BookingController bookingController = new BookingController();
+    private final VoucherController voucherController = new VoucherController();
     
     private ImageView ivAvatar;
-    private TextView tvName, tvEmail, tvStatsJoined, tvStatsUpcoming, tvStatsPoints;
-    private LinearLayout menuEdit, menuPassword, menuSettings, menuSupport, menuTerms, menuAdmin;
+    private TextView tvName, tvEmail, tvStatsJoined, tvStatsUpcoming, tvStatsPoints, tvMemberTier;
+    private LinearLayout menuEdit, menuPassword, menuSettings, menuSupport, menuTerms, menuAdmin, menuMyVouchers;
+    private TextView tvVoucherCount;
+    private final List<Voucher> myVouchers = new ArrayList<>();
     private MaterialButton btnLogout;
 
     @Nullable
@@ -52,6 +63,7 @@ public class ProfileFragment extends Fragment {
         ivAvatar = view.findViewById(R.id.iv_user_avatar);
         tvName = view.findViewById(R.id.tv_user_name);
         tvEmail = view.findViewById(R.id.tv_user_email);
+        tvMemberTier = view.findViewById(R.id.tv_profile_member_tier);
         
         tvStatsJoined = view.findViewById(R.id.tv_stats_joined);
         tvStatsUpcoming = view.findViewById(R.id.tv_stats_upcoming);
@@ -63,6 +75,8 @@ public class ProfileFragment extends Fragment {
         menuSupport = view.findViewById(R.id.menu_support);
         menuTerms = view.findViewById(R.id.menu_terms);
         menuAdmin = view.findViewById(R.id.menu_admin);
+        menuMyVouchers = view.findViewById(R.id.menu_my_vouchers);
+        tvVoucherCount = view.findViewById(R.id.tv_voucher_count);
         
         btnLogout = view.findViewById(R.id.btn_logout);
     }
@@ -73,6 +87,14 @@ public class ProfileFragment extends Fragment {
         menuSettings.setOnClickListener(v -> startActivity(new Intent(getContext(), SettingsActivity.class)));
         menuSupport.setOnClickListener(v -> startActivity(new Intent(getContext(), HelpCenterActivity.class)));
         menuTerms.setOnClickListener(v -> startActivity(new Intent(getContext(), TermsPolicyActivity.class)));
+        
+        if (menuMyVouchers != null) {
+            menuMyVouchers.setOnClickListener(v -> showMyVouchersDialog());
+        }
+        
+        if (tvMemberTier != null) {
+            tvMemberTier.setOnClickListener(v -> startActivity(new Intent(getContext(), MembershipDetailsActivity.class)));
+        }
         
         if (menuAdmin != null) {
             menuAdmin.setOnClickListener(v -> {
@@ -100,6 +122,15 @@ public class ProfileFragment extends Fragment {
         calculateUserStats();
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            loadUserProfile();
+            calculateUserStats();
+        }
+    }
+
     private void loadUserProfile() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
@@ -110,13 +141,19 @@ public class ProfileFragment extends Fragment {
                     if (user != null) {
                         tvName.setText(user.getFullName());
                         tvEmail.setText(user.getEmail());
+                        if (tvMemberTier != null) {
+                            tvMemberTier.setText("Hạng: " + (user.getMemberTier() != null ? user.getMemberTier() : "Thường"));
+                        }
+                        if (tvStatsPoints != null) {
+                            tvStatsPoints.setText(String.valueOf(user.getExp()));
+                        }
                         
                         if (menuAdmin != null) {
                             menuAdmin.setVisibility("admin".equalsIgnoreCase(user.getRole()) ? View.VISIBLE : View.GONE);
                         }
 
                         String avatarUrl = user.getAvatarName();
-                        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                        if (avatarUrl != null && !avatarUrl.isEmpty() && avatarUrl.startsWith("http")) {
                             Glide.with(ProfileFragment.this)
                                     .load(avatarUrl)
                                     .circleCrop()
@@ -141,6 +178,19 @@ public class ProfileFragment extends Fragment {
                 });
             }
         });
+
+        // Tải danh sách Voucher của User
+        voucherController.getUserVouchers(uid, vouchers -> {
+            if (isAdded() && getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    myVouchers.clear();
+                    myVouchers.addAll(vouchers);
+                    if (tvVoucherCount != null) {
+                        tvVoucherCount.setText(String.valueOf(vouchers.size()));
+                    }
+                });
+            }
+        }, error -> {});
     }
 
     private void calculateUserStats() {
@@ -152,13 +202,11 @@ public class ProfileFragment extends Fragment {
             
             int joined = 0;
             int upcoming = 0;
-            double totalPoints = 0;
 
             for (vn.humg.hai.event_ticket_booking_app.model.Booking b : bookings) {
                 String status = b.getStatus();
                 if ("Completed".equalsIgnoreCase(status) || "Hoàn thành".equalsIgnoreCase(status)) {
                     joined++;
-                    totalPoints += (b.getTotalPrice() / 10000);
                 } else if ("Confirmed".equalsIgnoreCase(status)) {
                     upcoming++;
                 }
@@ -166,13 +214,44 @@ public class ProfileFragment extends Fragment {
 
             final int finalJoined = joined;
             final int finalUpcoming = upcoming;
-            final int finalPoints = (int) totalPoints;
 
             getActivity().runOnUiThread(() -> {
                 tvStatsJoined.setText(String.valueOf(finalJoined));
                 tvStatsUpcoming.setText(String.valueOf(finalUpcoming));
-                tvStatsPoints.setText(String.valueOf(finalPoints));
             });
         }, error -> {});
+    }
+
+    private void showMyVouchersDialog() {
+        if (getContext() == null) return;
+
+        com.google.android.material.bottomsheet.BottomSheetDialog bottomSheetDialog = 
+            new com.google.android.material.bottomsheet.BottomSheetDialog(requireContext());
+
+        View sheetView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_my_vouchers, null);
+
+        TextView tvTitle = sheetView.findViewById(R.id.tv_sheet_title);
+        RecyclerView rvVouchers = sheetView.findViewById(R.id.recycler_sheet_vouchers);
+        TextView tvEmpty = sheetView.findViewById(R.id.tv_sheet_empty);
+
+        if (tvTitle != null) {
+            tvTitle.setText("Voucher của tôi (" + myVouchers.size() + ")");
+        }
+
+        if (myVouchers.isEmpty()) {
+            if (tvEmpty != null) tvEmpty.setVisibility(View.VISIBLE);
+            if (rvVouchers != null) rvVouchers.setVisibility(View.GONE);
+        } else {
+            if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
+            if (rvVouchers != null) {
+                rvVouchers.setVisibility(View.VISIBLE);
+                rvVouchers.setLayoutManager(new LinearLayoutManager(getContext()));
+                VoucherAdapter adapter = new VoucherAdapter(myVouchers);
+                rvVouchers.setAdapter(adapter);
+            }
+        }
+
+        bottomSheetDialog.setContentView(sheetView);
+        bottomSheetDialog.show();
     }
 }

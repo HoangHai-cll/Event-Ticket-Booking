@@ -18,10 +18,13 @@ import vn.humg.hai.event_ticket_booking_app.R;
 import vn.humg.hai.event_ticket_booking_app.controller.EventController;
 import vn.humg.hai.event_ticket_booking_app.model.Booking;
 import vn.humg.hai.event_ticket_booking_app.view.ReviewSubmitActivity;
+import vn.humg.hai.event_ticket_booking_app.controller.ReviewController;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder> {
     private final List<Booking> transactions;
     private final EventController eventController = new EventController();
+    private final ReviewController reviewController = new ReviewController();
 
     public TransactionAdapter(List<Booking> transactions) {
         this.transactions = transactions;
@@ -56,20 +59,31 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         // 4. Trạng thái, màu sắc và Nút đánh giá
         String status = booking.getStatus();
         boolean isCompleted = "Completed".equalsIgnoreCase(status) || "Hoàn thành".equalsIgnoreCase(status);
+        String displayStatus = status;
+        int statusColor = Color.parseColor("#F59E0B"); // default warning yellow
         
-        if (isCompleted) {
-            holder.tvStatus.setTextColor(Color.parseColor("#10B981"));
-            holder.tvStatus.setText("● Hoàn thành");
-            holder.btnRate.setVisibility(View.VISIBLE);
+        if ("Completed".equalsIgnoreCase(status) || "Hoàn thành".equalsIgnoreCase(status)) {
+            displayStatus = "Hoàn thành";
+            statusColor = Color.parseColor("#10B981");
+        } else if ("Confirmed".equalsIgnoreCase(status) || "Đã xác nhận".equalsIgnoreCase(status)) {
+            displayStatus = "Đã xác nhận";
+            statusColor = Color.parseColor("#10B981");
         } else if ("Cancelled".equalsIgnoreCase(status) || "Đã hủy".equalsIgnoreCase(status)) {
-            holder.tvStatus.setTextColor(Color.parseColor("#EF4444"));
-            holder.tvStatus.setText("● Đã hủy");
-            holder.btnRate.setVisibility(View.GONE);
-        } else {
-            holder.tvStatus.setTextColor(Color.parseColor("#F59E0B"));
-            holder.tvStatus.setText("● " + status);
-            holder.btnRate.setVisibility(View.GONE);
+            displayStatus = "Đã hủy";
+            statusColor = Color.parseColor("#EF4444");
+        } else if ("Refund Pending".equalsIgnoreCase(status) || "Chờ hoàn tiền".equalsIgnoreCase(status)) {
+            displayStatus = "Chờ hoàn tiền";
+            statusColor = Color.parseColor("#F59E0B");
+        } else if ("Pending Payment".equalsIgnoreCase(status) || "Chờ thanh toán".equalsIgnoreCase(status)) {
+            displayStatus = "Chờ thanh toán";
+            statusColor = Color.parseColor("#B45309");
         }
+        
+        holder.tvStatus.setTextColor(statusColor);
+        holder.tvStatus.setText("● " + displayStatus);
+        
+        // Ẩn nút đánh giá ban đầu, chỉ hiện khi đã check điều kiện thời gian sự kiện
+        holder.btnRate.setVisibility(View.GONE);
 
         // Xử lý sự kiện nhấn nút Đánh giá
         holder.btnRate.setOnClickListener(v -> {
@@ -83,6 +97,28 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             if (event != null) {
                 holder.tvTitle.post(() -> {
                     holder.tvTitle.setText(event.getTitle());
+                    
+                    boolean isExpired = false;
+                    if (event.getDate() != null) {
+                        isExpired = event.getDate().getSeconds() < (System.currentTimeMillis() / 1000);
+                    }
+                    if (isCompleted && isExpired) {
+                        String userId = FirebaseAuth.getInstance().getUid();
+                        if (userId != null) {
+                            reviewController.hasUserReviewedEvent(event.getEventId(), userId, hasReviewed -> {
+                                holder.btnRate.post(() -> {
+                                    if (!hasReviewed) {
+                                        holder.btnRate.setVisibility(View.VISIBLE);
+                                    } else {
+                                        holder.btnRate.setVisibility(View.GONE);
+                                    }
+                                });
+                            }, e -> {});
+                        }
+                    } else {
+                        holder.btnRate.setVisibility(View.GONE);
+                    }
+                    
                     Glide.with(holder.itemView.getContext())
                             .load(event.getImage())
                             .placeholder(R.drawable.img_logo_event_ticket_booking)

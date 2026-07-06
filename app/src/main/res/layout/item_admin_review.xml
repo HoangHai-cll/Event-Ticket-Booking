@@ -31,11 +31,12 @@
 
             <RatingBar
                 android:id="@+id/rb_review_rating"
-                style="?android:attr/ratingBarStyleSmall"
+                style="@style/GoldRatingBar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:numStars="5"
                 android:stepSize="1.0"
+                android:progressTint="@color/star_gold"
                 android:isIndicator="true" />
 
             <ImageButton

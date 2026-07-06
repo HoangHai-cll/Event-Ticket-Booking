@@ -3,6 +3,8 @@ package vn.humg.hai.event_ticket_booking_app.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.LayoutInflater;
+import androidx.appcompat.app.AlertDialog;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,14 +14,24 @@ import androidx.fragment.app.FragmentManager;
 import com.google.firebase.auth.FirebaseAuth;
 import android.widget.ImageView;
 import androidx.activity.OnBackPressedCallback;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import com.google.android.material.navigation.NavigationView;
+import android.widget.ImageButton;
+import com.bumptech.glide.Glide;
+
 import vn.humg.hai.event_ticket_booking_app.R;
-import vn.humg.hai.event_ticket_booking_app.controller.UserController;
+import androidx.lifecycle.ViewModelProvider;
+import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 import vn.humg.hai.event_ticket_booking_app.fragments.AdminDashboardFragment;
 import vn.humg.hai.event_ticket_booking_app.fragments.AdminHomeFragment;
+import vn.humg.hai.event_ticket_booking_app.fragments.AdminProfileFragment;
 import vn.humg.hai.event_ticket_booking_app.fragments.HistoryFragment;
 import vn.humg.hai.event_ticket_booking_app.fragments.HomeFragment;
 import vn.humg.hai.event_ticket_booking_app.fragments.ProfileFragment;
 import vn.humg.hai.event_ticket_booking_app.fragments.TicketsFragment;
+import vn.humg.hai.event_ticket_booking_app.view.SettingsActivity;
+import vn.humg.hai.event_ticket_booking_app.view.HelpCenterActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,13 +43,20 @@ public class MainActivity extends AppCompatActivity {
     private Fragment activeFragment;
     private FragmentManager fm;
     
-    private final UserController userController = new UserController();
+    private DrawerLayout drawerLayout;
+    private NavigationView navViewDrawer;
+
+    private AuthViewModel authViewModel;
     private boolean isUserAdmin = false;
+    private String pendingTargetTab = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        setupObservers(savedInstanceState);
 
         fm = getSupportFragmentManager();
         initViews();
@@ -65,28 +84,75 @@ public class MainActivity extends AppCompatActivity {
         ivTicketsIcon = findViewById(R.id.iv_nav_tickets_icon);
         ivHistoryIcon = findViewById(R.id.iv_nav_history_icon);
         ivProfileIcon = findViewById(R.id.iv_nav_profile_icon);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navViewDrawer = findViewById(R.id.nav_view_drawer);
+    }
+
+    private void setupObservers(Bundle savedInstanceState) {
+        authViewModel.getUserProfileState().observe(this, user -> {
+            if (user != null) {
+                isUserAdmin = "admin".equalsIgnoreCase(user.getRole());
+                setupUIForRole(isUserAdmin, savedInstanceState);
+                
+                if (navViewDrawer != null) {
+                    View headerView = navViewDrawer.getHeaderView(0);
+                    if (headerView != null) {
+                        TextView tvName = headerView.findViewById(R.id.tv_nav_header_name);
+                        TextView tvRole = headerView.findViewById(R.id.tv_nav_header_role);
+                        ImageView ivAvatar = headerView.findViewById(R.id.iv_nav_header_avatar);
+                        
+                        if (tvName != null) {
+                            String name = user.getFullName();
+                            tvName.setText(name != null ? name : "Người dùng");
+                        }
+                        if (tvRole != null) {
+                            tvRole.setText(isUserAdmin ? "Quản trị viên" : "Hạng: " + (user.getMemberTier() != null ? user.getMemberTier() : "Thường"));
+                            tvRole.setOnClickListener(v -> {
+                                if (!isUserAdmin) {
+                                    startActivity(new Intent(MainActivity.this, MembershipDetailsActivity.class));
+                                    drawerLayout.closeDrawer(GravityCompat.START);
+                                }
+                            });
+                        }
+                        
+                        if (ivAvatar != null) {
+                            String avatar = user.getAvatarName();
+                            if (avatar != null && !avatar.isEmpty()) {
+                                Glide.with(MainActivity.this)
+                                    .load(avatar)
+                                    .circleCrop()
+                                    .placeholder(R.drawable.img_logo_event_ticket_booking)
+                                    .into(ivAvatar);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        authViewModel.getErrorState().observe(this, error -> {
+            if (error != null) {
+                setupUIForRole(false, savedInstanceState);
+            }
+        });
     }
 
     private void checkUserRoleAndSetupFragments(Bundle savedInstanceState) {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
-
-        userController.getUserById(uid, user -> {
-            runOnUiThread(() -> {
-                isUserAdmin = user != null && "admin".equalsIgnoreCase(user.getRole());
-                setupUIForRole(isUserAdmin, savedInstanceState);
-            });
-        }, e -> setupUIForRole(false, savedInstanceState));
+        authViewModel.getUserProfile(uid);
     }
 
     private void setupUIForRole(boolean isAdmin, Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             if (isAdmin) {
                 homeFragment = new AdminHomeFragment();
+                profileFragment = new AdminProfileFragment();
             } else {
                 homeFragment = new HomeFragment();
+                profileFragment = new ProfileFragment();
             }
-            profileFragment = new ProfileFragment();
             activeFragment = homeFragment;
 
             if (isAdmin) {
@@ -118,6 +184,11 @@ public class MainActivity extends AppCompatActivity {
                         .commit();
                 updateNavUI("Home");
             }
+
+            if (pendingTargetTab != null) {
+                navigateToTab(pendingTargetTab);
+                pendingTargetTab = null;
+            }
         } else {
             // Khôi phục trạng thái khi xoay màn hình
             homeFragment = fm.findFragmentByTag("Home");
@@ -143,17 +214,58 @@ public class MainActivity extends AppCompatActivity {
         navHistory.setOnClickListener(v -> navigateToTab("History"));
         navProfile.setOnClickListener(v -> navigateToTab("Profile"));
 
+        // Drawer Menu Item clicks
+        navViewDrawer.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home_drawer) {
+                navigateToTab("Home");
+            } else if (id == R.id.nav_notifications_drawer) {
+                showNotificationsDialog();
+            } else if (id == R.id.nav_favorites_drawer) {
+                navigateToTab("Home");
+                if (homeFragment instanceof HomeFragment) {
+                    ((HomeFragment) homeFragment).filterByFavoritesOnly();
+                }
+            } else if (id == R.id.nav_vouchers_drawer) {
+                navigateToTab("Tickets");
+            } else if (id == R.id.nav_settings_drawer) {
+                startActivity(new Intent(this, SettingsActivity.class));
+            } else if (id == R.id.nav_support_drawer) {
+                startActivity(new Intent(this, HelpCenterActivity.class));
+            }
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
+
+        View headerView = navViewDrawer.getHeaderView(0);
+        if (headerView != null) {
+            ImageButton btnClose = headerView.findViewById(R.id.btn_close_drawer);
+            if (btnClose != null) {
+                btnClose.setOnClickListener(v -> {
+                    if (drawerLayout != null) drawerLayout.closeDrawer(GravityCompat.START);
+                });
+            }
+        }
+
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (activeFragment != homeFragment) {
-                    navigateToTab("Home");
+                if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else if (activeFragment != homeFragment && activeFragment != adminFragment) {
+                    navigateToTab(isUserAdmin ? "Admin" : "Home");
                 } else {
                     setEnabled(false);
                     getOnBackPressedDispatcher().onBackPressed();
                 }
             }
         });
+    }
+
+    public void openDrawer() {
+        if (drawerLayout != null) {
+            drawerLayout.openDrawer(GravityCompat.START);
+        }
     }
 
     public void navigateToTab(String tag) {
@@ -166,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
             default: target = homeFragment; break;
         }
 
-        if (target == null || activeFragment == target) return;
+        if (target == null || activeFragment == null || activeFragment == target) return;
 
         fm.beginTransaction().hide(activeFragment).show(target).commit();
         activeFragment = target;
@@ -228,7 +340,13 @@ public class MainActivity extends AppCompatActivity {
     private void handleIntent(Intent intent) {
         if (intent != null) {
             String targetTab = intent.getStringExtra("TARGET_TAB");
-            if (targetTab != null) navigateToTab(targetTab);
+            if (targetTab != null) {
+                if (activeFragment == null) {
+                    pendingTargetTab = targetTab;
+                } else {
+                    navigateToTab(targetTab);
+                }
+            }
         }
     }
 
@@ -237,5 +355,20 @@ public class MainActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleIntent(intent);
+    }
+
+    private void showNotificationsDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_notifications, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+        View btnClose = dialogView.findViewById(R.id.btn_close_notif);
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> dialog.dismiss());
+        }
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
+        dialog.show();
     }
 }

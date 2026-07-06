@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DESIGN.md Corner Radii -->
+    <dimen name="card_corner_radius">14dp</dimen>
+    <dimen name="button_corner_radius">12dp</dimen>
+    <dimen name="badge_corner_radius">12dp</dimen>
+
+    <!-- DESIGN.md Spacing & Margins -->
+    <dimen name="spacing_screen">16dp</dimen>
+    <dimen name="spacing_card">16dp</dimen>
+    <dimen name="margin_element">12dp</dimen>
+</resources>

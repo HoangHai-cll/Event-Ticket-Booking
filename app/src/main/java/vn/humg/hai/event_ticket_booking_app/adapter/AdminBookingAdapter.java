@@ -23,6 +23,9 @@ public class AdminBookingAdapter extends RecyclerView.Adapter<AdminBookingAdapte
     private final UserController userController = new UserController();
 
     public interface OnBookingActionListener {
+        // Phase B: Thêm callback phê duyệt / từ chối hoàn tiền
+        void onApproveRefund(Booking booking);
+        void onRejectRefund(Booking booking);
         void onConfirm(Booking booking);
         void onCancel(Booking booking);
     }
@@ -45,7 +48,7 @@ public class AdminBookingAdapter extends RecyclerView.Adapter<AdminBookingAdapte
 
         holder.tvBookingId.setText("Mã: #" + booking.getBookingId().toUpperCase());
         holder.tvPrice.setText("Giá: " + String.format(Locale.getDefault(), "%,.0fđ", booking.getTotalPrice()));
-        
+
         // Reset text để tránh lỗi hiển thị sai khi recycle view
         holder.tvUser.setText("Khách: Đang tải...");
         holder.tvEvent.setText("Đang tải sự kiện...");
@@ -57,22 +60,39 @@ public class AdminBookingAdapter extends RecyclerView.Adapter<AdminBookingAdapte
             holder.tvDate.setText("--/--/----");
         }
 
-        // Trạng thái và màu sắc
+        // Phase B: Hiển thị trạng thái và nút hành động theo từng trường hợp
         String status = booking.getStatus();
         holder.tvStatus.setText(status != null ? status : "Pending");
-        
-        if ("Completed".equalsIgnoreCase(status) || "Confirmed".equalsIgnoreCase(status)) {
-            holder.tvStatus.setTextColor(Color.parseColor("#10B981")); // Xanh lá
-            holder.btnConfirm.setVisibility(View.GONE);
-            holder.btnCancel.setVisibility(View.GONE);
-        } else if ("Cancelled".equalsIgnoreCase(status)) {
-            holder.tvStatus.setTextColor(Color.parseColor("#EF4444")); // Đỏ
-            holder.btnConfirm.setVisibility(View.GONE);
-            holder.btnCancel.setVisibility(View.GONE);
-        } else {
-            holder.tvStatus.setTextColor(Color.parseColor("#F59E0B")); // Cam (Pending)
+
+        // Reset visibility
+        holder.btnConfirm.setVisibility(View.GONE);
+        holder.btnCancel.setVisibility(View.GONE);
+
+        if ("Refund Pending".equalsIgnoreCase(status)) {
+            // Hiển thị 2 nút phê duyệt / từ chối hoàn tiền
+            holder.tvStatus.setTextColor(Color.parseColor("#F59E0B")); // Màu cam
             holder.btnConfirm.setVisibility(View.VISIBLE);
             holder.btnCancel.setVisibility(View.VISIBLE);
+            holder.btnConfirm.setText("✓ Duyệt hoàn");
+            holder.btnCancel.setText("✗ Từ chối");
+            holder.btnConfirm.setOnClickListener(v -> listener.onApproveRefund(booking));
+            holder.btnCancel.setOnClickListener(v -> listener.onRejectRefund(booking));
+
+        } else if ("Completed".equalsIgnoreCase(status) || "Confirmed".equalsIgnoreCase(status)) {
+            holder.tvStatus.setTextColor(Color.parseColor("#10B981")); // Xanh lá
+
+        } else if ("Cancelled".equalsIgnoreCase(status)) {
+            holder.tvStatus.setTextColor(Color.parseColor("#EF4444")); // Đỏ
+
+        } else {
+            // Pending Payment hoặc trạng thái khác → hiển thị nút Xác nhận / Hủy thông thường
+            holder.tvStatus.setTextColor(Color.parseColor("#6366F1")); // Tím
+            holder.btnConfirm.setVisibility(View.VISIBLE);
+            holder.btnCancel.setVisibility(View.VISIBLE);
+            holder.btnConfirm.setText("Xác nhận");
+            holder.btnCancel.setText("Hủy đơn");
+            holder.btnConfirm.setOnClickListener(v -> listener.onConfirm(booking));
+            holder.btnCancel.setOnClickListener(v -> listener.onCancel(booking));
         }
 
         // Tải tên khách hàng
@@ -92,9 +112,6 @@ public class AdminBookingAdapter extends RecyclerView.Adapter<AdminBookingAdapte
                 holder.tvEvent.post(() -> holder.tvEvent.setText("Sự kiện đã bị xóa"));
             }
         }, e -> holder.tvEvent.post(() -> holder.tvEvent.setText("Lỗi tải sự kiện")));
-
-        holder.btnConfirm.setOnClickListener(v -> listener.onConfirm(booking));
-        holder.btnCancel.setOnClickListener(v -> listener.onCancel(booking));
     }
 
     @Override

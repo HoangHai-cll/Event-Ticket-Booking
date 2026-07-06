@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home_drawer"
+            android:icon="@drawable/ic_nav_home"
+            android:title="Trang chủ" />
+        <item
+            android:id="@+id/nav_notifications_drawer"
+            android:icon="@drawable/ic_bell"
+            android:title="Thông báo" />
+        <item
+            android:id="@+id/nav_favorites_drawer"
+            android:icon="@drawable/ic_heart"
+            android:title="Sự kiện yêu thích" />
+        <item
+            android:id="@+id/nav_vouchers_drawer"
+            android:icon="@drawable/ic_nav_tickets"
+            android:title="Ví Voucher" />
+    </group>
+
+    <item android:title="Cài đặt">
+        <menu>
+            <item
+                android:id="@+id/nav_settings_drawer"
+                android:icon="@drawable/ic_settings"
+                android:title="Cài đặt hệ thống" />
+            <item
+                android:id="@+id/nav_support_drawer"
+                android:icon="@drawable/ic_support"
+                android:title="Trung tâm hỗ trợ" />
+        </menu>
+    </item>
+</menu>

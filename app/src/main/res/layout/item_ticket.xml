@@ -1,107 +1,244 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="16dp"
-    app:cardCornerRadius="20dp"
+    android:layout_marginBottom="8dp"
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <ImageView
-            android:id="@+id/iv_ticket_image"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/img_logo_event_ticket_booking" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/tv_ticket_category"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Âm nhạc"
-                android:textColor="@color/brand_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+            <!-- Ảnh sự kiện và Badge hết hạn -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#F1F3F9">
+                
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    
+                    <ImageView
+                        android:id="@+id/iv_ticket_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/img_logo_event_ticket_booking"
+                        tools:ignore="ContentDescription" />
 
-            <TextView
-                android:id="@+id/tv_ticket_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tên sự kiện"
-                android:textColor="@color/ink_dark"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                    <!-- Overlay tối khi hết hạn -->
+                    <View
+                        android:id="@+id/view_expired_overlay"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#99000000"
+                        android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/tv_ticket_info"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="📅 20 Th10, 2024 • 19:00\n📍 Địa điểm"
-                android:textColor="@color/text_muted"
-                android:textSize="13sp" />
+                    <!-- Badge Hết hạn -->
+                    <TextView
+                        android:id="@+id/tv_expired_badge"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:background="#99333333"
+                        android:text="Hết hạn"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp"
-                android:background="#EEE" />
-
+            <!-- Thông tin vé -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/tv_ticket_seat"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Ghế: Đang cập nhật"
-                    android:textColor="@color/ink_dark"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tv_ticket_status"
+                    android:id="@+id/tv_ticket_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="6dp"
-                    android:text="Đã xác nhận"
-                    android:textColor="#10B981"
-                    android:textSize="12sp"
-                    android:background="#D1FAE5" />
+                    android:textColor="@color/ink_dark"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="Vietnam Tech Summit 2025" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center_vertical">
+                    
+                    <TextView
+                        android:id="@+id/tv_ticket_id"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11sp"
+                        tools:text="#EP-12A4F9" />
+                        
+                    <View
+                        android:layout_width="3dp"
+                        android:layout_height="3dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="@color/text_muted" />
+                        
+                    <TextView
+                        android:id="@+id/tv_ticket_category"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        tools:text="Công nghệ" />
+                </LinearLayout>
+
+                <!-- Dòng thời gian -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp">
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/ic_calendar"
+                        app:tint="@color/text_muted"
+                        tools:ignore="ContentDescription" />
+                    <TextView
+                        android:id="@+id/tv_ticket_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11sp"
+                        tools:text="20 Th10, 2024 • 19:00" />
+                </LinearLayout>
+
+                <!-- Dòng địa điểm -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp">
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/ic_location"
+                        app:tint="@color/text_muted"
+                        tools:ignore="ContentDescription" />
+                    <TextView
+                        android:id="@+id/tv_ticket_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11sp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        tools:text="GEM Center, Q.1" />
+                </LinearLayout>
             </LinearLayout>
 
-            <ImageView
-                android:id="@+id/iv_ticket_qr"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="16dp"
-                android:src="@android:drawable/ic_menu_agenda" />
+            <!-- QR Code của vé -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginStart="12dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#F1F3F9">
+                <ImageView
+                    android:id="@+id/iv_ticket_qr"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="4dp"
+                    android:src="@android:drawable/ic_menu_agenda"
+                    tools:ignore="ContentDescription" />
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <View
+            android:id="@+id/v_ticket_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#F1F3F9"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:id="@+id/ll_ticket_status_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <TextView
-                android:id="@+id/tv_ticket_id"
+                android:id="@+id/tv_ticket_seat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/ink_dark"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                tools:text="Ghế: Đang cập nhật" />
+
+            <TextView
+                android:id="@+id/tv_ticket_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="4dp"
-                android:text="#EP-00000"
-                android:textColor="@color/text_muted"
-                android:textSize="12sp" />
+                android:paddingVertical="4dp"
+                android:paddingHorizontal="8dp"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                tools:text="Đã xác nhận" />
         </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_ticket_write_review"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginTop="12dp"
+            android:text="Viết đánh giá"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:visibility="gone"
+            app:strokeColor="@color/brand_primary"
+            app:strokeWidth="1.5dp"
+            app:cornerRadius="12dp"
+            app:icon="@android:drawable/btn_star_big_off"
+            app:iconSize="14dp"
+            app:iconTint="@color/brand_primary"
+            app:iconGravity="textStart"
+            tools:visibility="visible" />
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

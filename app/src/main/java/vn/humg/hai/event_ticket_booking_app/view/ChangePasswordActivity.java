@@ -3,23 +3,25 @@ package vn.humg.hai.event_ticket_booking_app.view;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import vn.humg.hai.event_ticket_booking_app.R;
+import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 
 public class ChangePasswordActivity extends AppCompatActivity {
 
     private TextInputEditText edtCurrentPassword, edtNewPassword, edtConfirmPassword;
     private MaterialButton btnUpdate;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
+
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        setupObservers();
 
         initViews();
         setupEvents();
@@ -32,6 +34,31 @@ public class ChangePasswordActivity extends AppCompatActivity {
         edtNewPassword = findViewById(R.id.edt_new_password);
         edtConfirmPassword = findViewById(R.id.edt_confirm_new_password);
         btnUpdate = findViewById(R.id.btn_update_password);
+    }
+
+    private void setupObservers() {
+        authViewModel.getLoadingState().observe(this, loading -> {
+            if (loading) {
+                btnUpdate.setEnabled(false);
+                btnUpdate.setText("Đang cập nhật...");
+            } else {
+                btnUpdate.setEnabled(true);
+                btnUpdate.setText("Cập nhật mật khẩu");
+            }
+        });
+
+        authViewModel.getErrorState().observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        authViewModel.getPasswordChangeSuccessState().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
     }
 
     private void setupEvents() {
@@ -55,36 +82,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
                 return;
             }
 
-            updatePassword(currentPass, newPass);
-        });
-    }
-
-    private void updatePassword(String currentPass, String newPass) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null || user.getEmail() == null) return;
-
-        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPass);
-
-        btnUpdate.setEnabled(false);
-        btnUpdate.setText("Đang cập nhật...");
-
-        user.reauthenticate(credential).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                user.updatePassword(newPass).addOnCompleteListener(updateTask -> {
-                    btnUpdate.setEnabled(true);
-                    btnUpdate.setText("Cập nhật mật khẩu");
-                    if (updateTask.isSuccessful()) {
-                        Toast.makeText(this, "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(this, "Lỗi: " + updateTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } else {
-                btnUpdate.setEnabled(true);
-                btnUpdate.setText("Cập nhật mật khẩu");
-                Toast.makeText(this, "Mật khẩu hiện tại không đúng", Toast.LENGTH_SHORT).show();
-            }
+            authViewModel.changePassword(currentPass, newPass);
         });
     }
 }

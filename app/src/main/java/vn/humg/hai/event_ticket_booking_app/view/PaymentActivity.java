@@ -25,9 +25,10 @@ import java.util.Locale;
 import java.util.UUID;
 
 import vn.humg.hai.event_ticket_booking_app.R;
-import vn.humg.hai.event_ticket_booking_app.controller.BookingController;
-import vn.humg.hai.event_ticket_booking_app.controller.EventController;
-import vn.humg.hai.event_ticket_booking_app.controller.UserController;
+import androidx.lifecycle.ViewModelProvider;
+import vn.humg.hai.event_ticket_booking_app.viewmodel.BookingViewModel;
+import vn.humg.hai.event_ticket_booking_app.viewmodel.EventViewModel;
+import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 import vn.humg.hai.event_ticket_booking_app.model.Booking;
 import vn.humg.hai.event_ticket_booking_app.model.Event;
 
@@ -38,11 +39,15 @@ public class PaymentActivity extends AppCompatActivity {
     private double totalPrice;
     private double discount;
     private String voucherCode;
+    private String tierId;
+    private String tierName;
+    private double tierPrice;
+    private String userVoucherId;
 
-    // Controllers
-    private final BookingController bookingController = new BookingController();
-    private final EventController eventController = new EventController();
-    private final UserController userController = new UserController();
+    // ViewModels
+    private BookingViewModel bookingViewModel;
+    private EventViewModel eventViewModel;
+    private AuthViewModel authViewModel;
     private Event currentEvent;
 
     // Stepper Views
@@ -81,11 +86,20 @@ public class PaymentActivity extends AppCompatActivity {
         totalPrice = getIntent().getDoubleExtra("EXTRA_TOTAL_PRICE", 0);
         discount = getIntent().getDoubleExtra("EXTRA_DISCOUNT", 0);
         voucherCode = getIntent().getStringExtra("EXTRA_VOUCHER_CODE");
+        tierId = getIntent().getStringExtra("EXTRA_TIER_ID");
+        tierName = getIntent().getStringExtra("EXTRA_TIER_NAME");
+        tierPrice = getIntent().getDoubleExtra("EXTRA_TIER_PRICE", 0);
+        userVoucherId = getIntent().getStringExtra("EXTRA_USER_VOUCHER_ID");
 
         if (eventId == null) {
             finish();
             return;
         }
+
+        bookingViewModel = new ViewModelProvider(this).get(BookingViewModel.class);
+        eventViewModel = new ViewModelProvider(this).get(EventViewModel.class);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        setupObservers();
 
         initViews();
         loadEventData();
@@ -93,6 +107,37 @@ public class PaymentActivity extends AppCompatActivity {
         setupEvents();
         updateStepperUI();
         updatePaymentCardBorders(getSelectedPaymentMethodId());
+    }
+
+    private void setupObservers() {
+        eventViewModel.getEventDetailState().observe(this, event -> {
+            if (event != null) {
+                this.currentEvent = event;
+            }
+        });
+
+        authViewModel.getUserProfileState().observe(this, user -> {
+            if (user != null) {
+                edtName.setText(user.getFullName());
+                edtPhone.setText(user.getPhone() != null ? user.getPhone() : "");
+                edtEmail.setText(user.getEmail());
+            }
+        });
+
+        bookingViewModel.getBookingResultState().observe(this, result -> {
+            if (result.status == BookingViewModel.BookingStatus.LOADING) {
+                // logic handled by dialog
+            } else if (result.status == BookingViewModel.BookingStatus.SUCCESS) {
+                if (loadingDialog != null) loadingDialog.dismiss();
+                navigateToSuccess(result.bookingId);
+            } else if (result.status == BookingViewModel.BookingStatus.LEVEL_UP) {
+                if (loadingDialog != null) loadingDialog.dismiss();
+                showLevelUpDialog(result.newTier, result.bookingId);
+            } else if (result.status == BookingViewModel.BookingStatus.ERROR) {
+                if (loadingDialog != null) loadingDialog.dismiss();
+                Toast.makeText(this, getString(R.string.msg_booking_save_error_format, result.errorMessage), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void initViews() {
@@ -136,25 +181,13 @@ public class PaymentActivity extends AppCompatActivity {
     }
 
     private void loadEventData() {
-        eventController.getEventById(eventId, event -> {
-            if (event != null) {
-                this.currentEvent = event;
-            }
-        }, error -> {});
+        eventViewModel.loadEventById(eventId);
     }
 
     private void loadUserData() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid != null) {
-            userController.getUserById(uid, user -> {
-                if (user != null) {
-                    runOnUiThread(() -> {
-                        edtName.setText(user.getFullName());
-                        edtPhone.setText(user.getPhone() != null ? user.getPhone() : "");
-                        edtEmail.setText(user.getEmail());
-                    });
-                }
-            }, error -> {});
+            authViewModel.getUserProfile(uid);
         }
     }
 
@@ -394,6 +427,9 @@ public class PaymentActivity extends AppCompatActivity {
         booking.setUserId(uid);
         booking.setSellerId(currentEvent != null ? currentEvent.getCreatedByAdminId() : "");
         booking.setEventId(eventId);
+        booking.setTierId(tierId);
+        booking.setTierName(tierName);
+        booking.setPricePerTicket(tierPrice > 0 ? tierPrice : (currentEvent != null ? currentEvent.getPrice() : 0));
         booking.setQuantity(quantity);
         booking.setTotalPrice(totalPrice);
         booking.setDiscount(discount);
@@ -411,30 +447,45 @@ public class PaymentActivity extends AppCompatActivity {
             }
         }
 
-        bookingController.saveBooking(booking, () -> {
-            if (currentEvent != null) {
-                int newRemaining = currentEvent.getRemainingTicket() - quantity;
-                eventController.updateRemainingTicket(eventId, newRemaining, () -> {
-                    runOnUiThread(() -> {
-                        if (loadingDialog != null) loadingDialog.dismiss();
-                        Intent intent = new Intent(this, PaymentSuccessActivity.class);
-                        intent.putExtra("EXTRA_BOOKING_ID", bookingId);
-                        intent.putExtra("EXTRA_EVENT_ID", eventId);
-                        intent.putExtra("EXTRA_QUANTITY", quantity);
-                        startActivity(intent);
-                        finish();
-                    });
-                }, error -> {
-                    if (loadingDialog != null) loadingDialog.dismiss();
-                    finish();
-                });
-            }
-        }, error -> {
-            runOnUiThread(() -> {
-                if (loadingDialog != null) loadingDialog.dismiss();
-                Toast.makeText(this, getString(R.string.msg_booking_save_error_format, error), Toast.LENGTH_LONG).show();
+        bookingViewModel.checkoutBooking(booking, currentEvent, userVoucherId);
+    }
+
+    private void showLevelUpDialog(String newTier, String bookingId) {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_level_up, null);
+        TextView tvTierName = dialogView.findViewById(R.id.tv_level_up_tier);
+        MaterialButton btnGotIt = dialogView.findViewById(R.id.btn_level_up_got_it);
+
+        if (tvTierName != null) {
+            tvTierName.setText("HẠNG: " + newTier.toUpperCase());
+        }
+
+        AlertDialog levelUpDialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+
+        if (btnGotIt != null) {
+            btnGotIt.setOnClickListener(v -> {
+                levelUpDialog.dismiss();
+                navigateToSuccess(bookingId);
             });
-        });
+        }
+
+        if (levelUpDialog.getWindow() != null) {
+            levelUpDialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
+
+        levelUpDialog.show();
+    }
+
+    private void navigateToSuccess(String bookingId) {
+        if (loadingDialog != null) loadingDialog.dismiss();
+        Intent intent = new Intent(this, PaymentSuccessActivity.class);
+        intent.putExtra("EXTRA_BOOKING_ID", bookingId);
+        intent.putExtra("EXTRA_EVENT_ID", eventId);
+        intent.putExtra("EXTRA_QUANTITY", quantity);
+        startActivity(intent);
+        finish();
     }
 
     private String formatPrice(double price) {

@@ -10,22 +10,16 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
+import androidx.lifecycle.ViewModelProvider;
 import vn.humg.hai.event_ticket_booking_app.adapter.AuthResultAdapter;
-import vn.humg.hai.event_ticket_booking_app.view.RegisterActivity;
-import vn.humg.hai.event_ticket_booking_app.view.HomeActivity;
+import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 
 public class LoginActivity extends AppCompatActivity {
 
     private MaterialButton btnLogin, btnGoogle, btnFacebook;
     private TextView tvRegisterLink;
     private TextInputEditText edtEmail, edtPassword;
-    private FirebaseAuth auth;
-    private FirebaseFirestore firestore;
+    private AuthViewModel authViewModel;
     private ActivityResultLauncher<Intent> registerLauncher;
 
     @Override
@@ -33,8 +27,9 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        setupObservers();
 
         registerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -59,6 +54,23 @@ public class LoginActivity extends AppCompatActivity {
         initViews();
         initEvents();
         prefillLoginFields();
+    }
+
+    private void setupObservers() {
+        authViewModel.getAuthSuccessState().observe(this, success -> {
+            if (success) {
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        authViewModel.getErrorState().observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, "Đăng nhập thất bại: " + error, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void prefillLoginFields() {
@@ -105,27 +117,7 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            auth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-                            FirebaseUser user = auth.getCurrentUser();
-                            // Cập nhật lastLogin bất đồng bộ, không chặn chuyển màn hình
-                            if (user != null) {
-                                firestore.collection("users").document(user.getUid())
-                                        .update("lastLogin", FieldValue.serverTimestamp())
-                                        .addOnFailureListener(e -> {
-                                            // optional: Log or show debug toast
-                                        });
-                            }
-                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            Toast.makeText(this, "Đăng nhập thất bại: " + (task.getException() != null ? task.getException().getMessage() : "Lỗi"), Toast.LENGTH_LONG).show();
-                        }
-                    });
+            authViewModel.login(email, password);
         });
 
         // Đăng nhập MXH

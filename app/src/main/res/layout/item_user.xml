@@ -49,6 +49,17 @@
                 android:textColor="@color/text_muted"
                 android:textSize="12sp"
                 tools:text="hai@gmail.com" />
+
+            <!-- Phase C: Hiển thị Hạng và EXP -->
+            <TextView
+                android:id="@+id/tv_user_item_tier_exp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/brand_primary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:layout_marginTop="2dp"
+                tools:text="🏅 Đồng • EXP: 750" />
         </LinearLayout>
 
         <TextView

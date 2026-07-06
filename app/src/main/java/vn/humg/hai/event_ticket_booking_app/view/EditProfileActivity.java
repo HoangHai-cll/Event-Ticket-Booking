@@ -29,7 +29,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import vn.humg.hai.event_ticket_booking_app.R;
-import vn.humg.hai.event_ticket_booking_app.controller.UserController;
+import androidx.lifecycle.ViewModelProvider;
+import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 import vn.humg.hai.event_ticket_booking_app.model.User;
 
 public class EditProfileActivity extends AppCompatActivity {
@@ -41,7 +42,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private View fabChangeAvatar;
     private MaterialButton btnSave;
 
-    private final UserController userController = new UserController();
+    private AuthViewModel authViewModel;
     private User currentUser;
     private Calendar calendar = Calendar.getInstance();
 
@@ -59,10 +60,59 @@ public class EditProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
 
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        setupObservers();
+
         initViews();
         setupGenderDropdown();
         loadUserData();
         setupEvents();
+    }
+
+    private void setupObservers() {
+        authViewModel.getUserProfileState().observe(this, user -> {
+            if (user != null) {
+                currentUser = user;
+                edtFullname.setText(user.getFullName());
+                edtEmail.setText(user.getEmail());
+                edtPhone.setText(user.getPhone());
+                edtBirthday.setText(user.getBirthday() != null ? user.getBirthday() : "");
+                
+                if (user.getGender() != null) {
+                    spinnerGender.setText(user.getGender(), false);
+                }
+                
+                selectedAvatarUrl = user.getAvatarName() != null ? user.getAvatarName() : "";
+                
+                if (!selectedAvatarUrl.isEmpty() && selectedAvatarUrl.startsWith("http")) {
+                    Glide.with(this)
+                            .load(selectedAvatarUrl)
+                            .circleCrop()
+                            .placeholder(R.drawable.img_logo_event_ticket_booking)
+                            .into(ivAvatar);
+                } else {
+                    Glide.with(this)
+                            .load(R.drawable.img_logo_event_ticket_booking)
+                            .circleCrop()
+                            .into(ivAvatar);
+                }
+
+                renderInterests(user.getInterests());
+            }
+        });
+
+        authViewModel.getErrorState().observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        authViewModel.getUpdateSuccessState().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
     }
 
     private void initViews() {
@@ -88,40 +138,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private void loadUserData() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
-
-        userController.getUserById(uid, user -> {
-            if (user != null) {
-                currentUser = user;
-                runOnUiThread(() -> {
-                    edtFullname.setText(user.getFullName());
-                    edtEmail.setText(user.getEmail());
-                    edtPhone.setText(user.getPhone());
-                    edtBirthday.setText(user.getBirthday() != null ? user.getBirthday() : "");
-                    
-                    if (user.getGender() != null) {
-                        spinnerGender.setText(user.getGender(), false);
-                    }
-                    
-                    selectedAvatarUrl = user.getAvatarName() != null ? user.getAvatarName() : "";
-                    
-                    if (!selectedAvatarUrl.isEmpty()) {
-                        Glide.with(this)
-                                .load(selectedAvatarUrl)
-                                .circleCrop()
-                                .placeholder(R.drawable.img_logo_event_ticket_booking)
-                                .into(ivAvatar);
-                    } else {
-                        Glide.with(this)
-                                .load(R.drawable.img_logo_event_ticket_booking)
-                                .circleCrop()
-                                .into(ivAvatar);
-                    }
-
-                    // Render Interests Chips
-                    renderInterests(user.getInterests());
-                });
-            }
-        }, e -> Toast.makeText(this, "Lỗi tải thông tin", Toast.LENGTH_SHORT).show());
+        authViewModel.getUserProfile(uid);
     }
 
     private void renderInterests(List<String> interests) {
@@ -236,12 +253,7 @@ public class EditProfileActivity extends AppCompatActivity {
             currentUser.setGender(gender);
             currentUser.setAvatarName(selectedAvatarUrl);
 
-            userController.saveUserProfile(currentUser, () -> {
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
-                    finish();
-                });
-            }, e -> Toast.makeText(this, "Lỗi: " + e, Toast.LENGTH_SHORT).show());
+            authViewModel.saveUserProfile(currentUser);
         });
     }
 

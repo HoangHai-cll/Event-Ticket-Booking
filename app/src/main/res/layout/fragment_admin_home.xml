@@ -4,12 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:background="@android:color/transparent">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@android:color/transparent"
         app:elevation="0dp">
 
         <LinearLayout
@@ -100,7 +100,10 @@
                         android:text="Tất cả"
                         android:textColor="@color/white"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/btn_press_scale" />
 
                     <TextView
                         android:id="@+id/chip_filter_active"
@@ -112,7 +115,10 @@
                         android:paddingHorizontal="16dp"
                         android:text="Đang diễn ra"
                         android:textColor="@color/ink_dark"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/btn_press_scale" />
 
                     <TextView
                         android:id="@+id/chip_filter_drafts"
@@ -124,7 +130,10 @@
                         android:paddingHorizontal="16dp"
                         android:text="Bản nháp"
                         android:textColor="@color/ink_dark"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/btn_press_scale" />
 
                     <TextView
                         android:id="@+id/chip_filter_completed"
@@ -136,7 +145,10 @@
                         android:paddingHorizontal="16dp"
                         android:text="Đã kết thúc"
                         android:textColor="@color/ink_dark"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:stateListAnimator="@animator/btn_press_scale" />
                 </LinearLayout>
             </HorizontalScrollView>
         </LinearLayout>
@@ -176,6 +188,7 @@
         app:backgroundTint="@color/brand_primary"
         app:srcCompat="@android:drawable/ic_input_add"
         app:tint="@color/white"
-        android:contentDescription="Add Event" />
+        android:contentDescription="Add Event"
+        android:stateListAnimator="@animator/btn_press_scale" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

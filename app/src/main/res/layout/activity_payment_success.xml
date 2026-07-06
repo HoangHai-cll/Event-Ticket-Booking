@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:background="@drawable/bg_radial_festive_dark">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -25,8 +25,7 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_marginTop="20dp"
-                android:src="@android:drawable/checkbox_on_background"
-                app:tint="#10B981"
+                android:src="@drawable/ic_success_check"
                 android:contentDescription="@string/label_payment_success" />
 
             <TextView
@@ -34,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/label_payment_success"
-                android:textColor="@color/ink_dark"
+                android:textColor="@color/white"
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
@@ -44,8 +43,9 @@
                 android:layout_marginTop="8dp"
                 android:gravity="center"
                 android:text="@string/label_payment_success_desc"
-                android:textColor="@color/text_muted"
+                android:textColor="#F1F5F9"
                 android:textSize="14sp" />
+
 
             <!-- The Ticket Stub -->
             <com.google.android.material.card.MaterialCardView
@@ -82,7 +82,7 @@
                                 android:paddingHorizontal="10dp"
                                 android:paddingVertical="4dp"
                                 android:text="@string/app_name"
-                                android:textColor="@color/brand_primary"
+                                android:textColor="@color/color_primary_periwinkle"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
                             <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
@@ -90,7 +90,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/status_ticket_confirmed"
-                                android:textColor="#10B981"
+                                android:textColor="@color/color_primary_periwinkle"
                                 android:textStyle="bold"
                                 android:textSize="12sp" />
                         </LinearLayout>
@@ -223,10 +223,10 @@
             android:layout_weight="1"
             android:text="@string/btn_view_my_tickets"
             android:textAllCaps="false"
-            android:textColor="@color/brand_primary"
+            android:textColor="@color/color_primary_periwinkle"
             android:textSize="15sp"
             android:textStyle="bold"
-            app:backgroundTint="#F5F3FF"
+            app:backgroundTint="#F0F3FF"
             app:cornerRadius="14dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -239,7 +239,7 @@
             android:textAllCaps="false"
             android:textSize="15sp"
             android:textStyle="bold"
-            app:backgroundTint="@color/brand_primary"
+            app:backgroundTint="@color/color_primary_periwinkle"
             app:cornerRadius="14dp" />
     </LinearLayout>
 

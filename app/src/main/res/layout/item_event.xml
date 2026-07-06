@@ -1,57 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="8dp"
-    app:cardCornerRadius="18dp"
-    app:cardElevation="4dp"
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="6dp"
     app:cardUseCompatPadding="true"
-    android:foreground="?attr/selectableItemBackground">
+    android:clickable="true"
+    android:focusable="true"
+    android:stateListAnimator="@animator/btn_press_scale">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:background="@color/white">
 
-        <TextView
-            android:id="@+id/tv_item_title"
+        <FrameLayout
+            android:id="@+id/fl_item_image_container"
+            android:layout_width="match_parent"
+            android:layout_height="180dp">
+
+            <ImageView
+                android:id="@+id/iv_item_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/img_logo_event_ticket_booking"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_item_date_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                android:padding="8dp"
+                android:textColor="@color/ink_dark"
+                android:textSize="12sp"
+                android:background="@drawable/bg_chip_light"
+                tools:text="15 Tháng 5" />
+
+            <ImageView
+                android:id="@+id/tv_item_favorite"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_margin="12dp"
+                android:layout_gravity="top|end"
+                android:padding="8dp"
+                android:src="@drawable/ic_heart"
+                android:background="@drawable/bg_circle_white"
+                android:clickable="true"
+                android:focusable="true"
+                android:stateListAnimator="@animator/btn_press_scale" />
+        </FrameLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tên sự kiện"
-            android:textColor="@color/ink_dark"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tv_item_location"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Địa điểm"
-            android:textColor="@color/text_muted"
-            android:textSize="14sp"
-            android:layout_marginTop="6dp" />
+            <TextView
+                android:id="@+id/tv_item_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/ink_dark"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Tên sự kiện" />
 
-        <TextView
-            android:id="@+id/tv_item_date"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ngày giờ"
-            android:textColor="@color/text_muted"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp" />
+            <!-- Phần hiển thị Đánh giá (Mới thêm) -->
+            <LinearLayout
+                android:id="@+id/ll_item_rating_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+                <RatingBar
+                    android:id="@+id/rb_item_rating"
+                    style="@style/GoldRatingBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:isIndicator="true"
+                    android:numStars="5"
+                    android:stepSize="0.1"
+                    android:progressTint="@color/star_gold" />
+                <TextView
+                    android:id="@+id/tv_item_review_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp"
+                    tools:text="(128 đánh giá)" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_item_price"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="850.000đ"
-            android:textColor="@color/brand_primary"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:layout_marginTop="10dp" />
+            <TextView
+                android:id="@+id/tv_item_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/text_muted"
+                android:textSize="14sp"
+                tools:text="⏰ 14:00 - 17:00" />
+
+            <TextView
+                android:id="@+id/tv_item_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/text_muted"
+                android:textSize="14sp"
+                tools:text="The Gallery, Quận 1" />
+
+            <LinearLayout
+                android:id="@+id/ll_item_action_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tv_item_price"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="850.000đ" />
+
+                <TextView
+                    android:id="@+id/tv_item_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:gravity="center"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:text="Chi tiết"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="@drawable/bg_chip" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>

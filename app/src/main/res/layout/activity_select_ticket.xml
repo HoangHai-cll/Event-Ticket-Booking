@@ -11,13 +11,35 @@
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         app:elevation="0dp">
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_select_ticket"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:navigationIcon="@android:drawable/ic_menu_revert"
-            app:title="@string/label_select_ticket"
-            app:titleTextColor="@color/brand_primary" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:background="@color/bg_light">
+
+            <ImageButton
+                android:id="@+id/btn_back_custom"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="@drawable/bg_back_button"
+                android:contentDescription="Back"
+                android:scaleType="centerInside" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/label_select_ticket"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/ink_dark"
+                android:gravity="center"
+                android:layout_marginEnd="40dp" />
+        </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -70,25 +92,80 @@
                             android:textColor="@color/ink_dark"
                             android:textSize="16sp"
                             tools:text="Vietnam Tech Summit 2025" />
-                        <TextView
-                            android:id="@+id/tv_select_event_date"
-                            android:layout_width="wrap_content"
+                        <!-- Dòng thời gian -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/text_muted"
-                            android:textSize="13sp"
-                            android:layout_marginTop="4dp"
-                            tools:text="📅 15 Tháng 7, 2025" />
-                        <TextView
-                            android:id="@+id/tv_select_event_location"
-                            android:layout_width="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginTop="6dp">
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:src="@drawable/ic_calendar"
+                                app:tint="@color/text_muted"
+                                android:contentDescription="Date" />
+                            <TextView
+                                android:id="@+id/tv_select_event_date"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:textColor="@color/text_muted"
+                                android:textSize="13sp"
+                                tools:text="15 Tháng 7, 2025" />
+                        </LinearLayout>
+
+                        <!-- Dòng địa điểm -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/text_muted"
-                            android:textSize="13sp"
-                            android:layout_marginTop="2dp"
-                            tools:text="📍 GEM Center, TP.HCM" />
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginTop="4dp">
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:src="@drawable/ic_location"
+                                app:tint="@color/text_muted"
+                                android:contentDescription="Location" />
+                            <TextView
+                                android:id="@+id/tv_select_event_location"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:textColor="@color/text_muted"
+                                android:textSize="13sp"
+                                tools:text="GEM Center, TP.HCM" />
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tier Selector (hiển thị khi event có tiers) -->
+            <LinearLayout
+                android:id="@+id/layout_tier_selector"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Chọn hạng vé"
+                    android:textStyle="bold"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="10dp" />
+
+                <LinearLayout
+                    android:id="@+id/container_tier_cards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
 
             <!-- Ticket Picker -->
             <com.google.android.material.card.MaterialCardView
@@ -163,7 +240,7 @@
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
                                 android:background="?attr/selectableItemBackgroundBorderless"
-                                android:src="@android:drawable/ic_media_previous"
+                                android:src="@drawable/ic_minus"
                                 app:tint="@color/text_muted"
                                 tools:ignore="ContentDescription" />
                             <TextView
@@ -180,7 +257,7 @@
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
                                 android:background="?attr/selectableItemBackgroundBorderless"
-                                android:src="@android:drawable/ic_media_next"
+                                android:src="@drawable/ic_add"
                                 app:tint="@color/brand_primary"
                                 tools:ignore="ContentDescription" />
                         </LinearLayout>
@@ -216,10 +293,21 @@
                         android:layout_weight="1"
                         android:layout_marginStart="12dp"
                         android:background="@null"
-                        android:hint="Nhập mã giảm giá"
+                        android:hint="Mã giảm giá"
                         android:textSize="14sp"
                         android:inputType="textCapCharacters"
                         android:importantForAutofill="no" />
+                    <TextView
+                        android:id="@+id/btn_select_from_wallet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chọn mã"
+                        android:textColor="@color/brand_primary"
+                        android:textStyle="bold"
+                        android:padding="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:clickable="true"
+                        android:focusable="true" />
                     <TextView
                         android:id="@+id/btn_apply_voucher"
                         android:layout_width="wrap_content"

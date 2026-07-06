@@ -9,6 +9,7 @@ public class Review {
     private String eventId;
     private float rating;
     private String comment;
+    private String imageUrl;
     private Timestamp createdAt;
 
     public Review() {}
@@ -30,6 +31,9 @@ public class Review {
 
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }

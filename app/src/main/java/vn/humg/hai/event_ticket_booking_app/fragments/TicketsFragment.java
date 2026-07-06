@@ -6,29 +6,43 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ProgressBar;
+import com.google.android.material.chip.ChipGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
+import android.graphics.Bitmap;
+import android.widget.ImageView;
+import androidx.appcompat.app.AlertDialog;
+import com.google.zxing.BarcodeFormat;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import vn.humg.hai.event_ticket_booking_app.R;
 import vn.humg.hai.event_ticket_booking_app.adapter.TicketAdapter;
 import vn.humg.hai.event_ticket_booking_app.controller.BookingController;
+import vn.humg.hai.event_ticket_booking_app.controller.EventController;
 import vn.humg.hai.event_ticket_booking_app.model.Booking;
+import vn.humg.hai.event_ticket_booking_app.model.Event;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Collections;
 
 public class TicketsFragment extends Fragment {
 
     private final BookingController bookingController = new BookingController();
+    private final EventController eventController = new EventController();
     private final List<Booking> fullBookingList = new ArrayList<>();
     private final List<Booking> displayList = new ArrayList<>();
+    private final Map<String, Event> eventCache = new HashMap<>();
     private TicketAdapter ticketAdapter;
     
     private RecyclerView recyclerTickets;
     private TextView tvTicketCount;
-    private TextView filterActive, filterUsed, filterCancelled;
+    private ChipGroup chipGroupStatus;
     private String currentStatusFilter = "Confirmed";
 
     @Nullable
@@ -37,7 +51,7 @@ public class TicketsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_tickets, container, false);
         initViews(view);
         setupRecyclerView();
-        initEvents();
+        initEvents(view);
         loadMyTickets();
         return view;
     }
@@ -59,22 +73,31 @@ public class TicketsFragment extends Fragment {
     private void initViews(View view) {
         recyclerTickets = view.findViewById(R.id.recycler_tickets);
         tvTicketCount = view.findViewById(R.id.tv_ticket_count);
-        
-        filterActive = view.findViewById(R.id.filter_active);
-        filterUsed = view.findViewById(R.id.filter_used);
-        filterCancelled = view.findViewById(R.id.filter_cancelled);
+        chipGroupStatus = view.findViewById(R.id.chip_group_status);
     }
 
     private void setupRecyclerView() {
         recyclerTickets.setLayoutManager(new LinearLayoutManager(getContext()));
-        ticketAdapter = new TicketAdapter(displayList);
+        ticketAdapter = new TicketAdapter(displayList, eventCache, this::showQRCodeDialog);
         recyclerTickets.setAdapter(ticketAdapter);
     }
 
-    private void initEvents() {
-        filterActive.setOnClickListener(v -> filterBookings("Confirmed"));
-        filterUsed.setOnClickListener(v -> filterBookings("Used"));
-        filterCancelled.setOnClickListener(v -> filterBookings("Cancelled"));
+    private void initEvents(View view) {
+        View btnMenuDrawer = view.findViewById(R.id.btn_menu_drawer);
+        if (btnMenuDrawer != null) {
+            btnMenuDrawer.setOnClickListener(v -> {
+                if (getActivity() instanceof vn.humg.hai.event_ticket_booking_app.view.MainActivity) {
+                    ((vn.humg.hai.event_ticket_booking_app.view.MainActivity) getActivity()).openDrawer();
+                }
+            });
+        }
+        
+        chipGroupStatus.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.chip_active) filterBookings("Confirmed");
+            else if (checkedId == R.id.chip_used) filterBookings("Used");
+            else if (checkedId == R.id.chip_cancelled) filterBookings("Cancelled");
+            else filterBookings("Confirmed");
+        });
     }
 
     private void loadMyTickets() {
@@ -83,11 +106,51 @@ public class TicketsFragment extends Fragment {
 
         bookingController.getBookingsByUser(userId, bookings -> {
             if (!isAdded() || getActivity() == null) return;
-            getActivity().runOnUiThread(() -> {
+
+            // Thu thập các ID sự kiện chưa có trong cache
+            List<String> missingEventIds = new ArrayList<>();
+            if (bookings != null) {
+                for (Booking b : bookings) {
+                    if (b != null && b.getEventId() != null && !eventCache.containsKey(b.getEventId())) {
+                        missingEventIds.add(b.getEventId());
+                    }
+                }
+            }
+
+            Runnable updateUI = () -> {
                 fullBookingList.clear();
-                fullBookingList.addAll(bookings);
+                if (bookings != null) {
+                    fullBookingList.addAll(bookings);
+                }
                 filterBookings(currentStatusFilter);
-            });
+            };
+
+            if (missingEventIds.isEmpty()) {
+                getActivity().runOnUiThread(updateUI);
+            } else {
+                // Tải song song các sự kiện còn thiếu
+                final int[] count = {missingEventIds.size()};
+                for (String id : missingEventIds) {
+                    eventController.getEventById(id, event -> {
+                        if (event != null) {
+                            eventCache.put(id, event);
+                        }
+                        synchronized (count) {
+                            count[0]--;
+                            if (count[0] == 0 && isAdded() && getActivity() != null) {
+                                getActivity().runOnUiThread(updateUI);
+                            }
+                        }
+                    }, error -> {
+                        synchronized (count) {
+                            count[0]--;
+                            if (count[0] == 0 && isAdded() && getActivity() != null) {
+                                getActivity().runOnUiThread(updateUI);
+                            }
+                        }
+                    });
+                }
+            }
         }, error -> {
             if (!isAdded() || getActivity() == null) return;
             getActivity().runOnUiThread(() -> 
@@ -103,10 +166,31 @@ public class TicketsFragment extends Fragment {
             if (status.equalsIgnoreCase(b.getStatus())) {
                 displayList.add(b);
             }
+            // Phase B: vé "Refund Pending" cũng hiển thị trong tab "Đã hủy" phía User
+            else if ("Cancelled".equalsIgnoreCase(status) && "Refund Pending".equalsIgnoreCase(b.getStatus())) {
+                displayList.add(b);
+            }
         }
+        
+        Collections.sort(displayList, (b1, b2) -> {
+            Event e1 = eventCache.get(b1.getEventId());
+            Event e2 = eventCache.get(b2.getEventId());
+            boolean isExpired1 = false;
+            boolean isExpired2 = false;
+            long currentTime = System.currentTimeMillis() / 1000;
+            if (e1 != null && e1.getDate() != null) {
+                isExpired1 = e1.getDate().getSeconds() < currentTime;
+            }
+            if (e2 != null && e2.getDate() != null) {
+                isExpired2 = e2.getDate().getSeconds() < currentTime;
+            }
+            if (isExpired1 && !isExpired2) return 1;
+            if (!isExpired1 && isExpired2) return -1;
+            return 0;
+        });
+        
         ticketAdapter.notifyDataSetChanged();
         updateCountText(status);
-        updateFilterUI(status);
     }
 
     private void updateCountText(String status) {
@@ -117,22 +201,137 @@ public class TicketsFragment extends Fragment {
         }
     }
 
-    private void updateFilterUI(String activeStatus) {
-        resetFilterStyle(filterActive);
-        resetFilterStyle(filterUsed);
-        resetFilterStyle(filterCancelled);
+    private void showQRCodeDialog(Booking booking) {
+        if (!"Confirmed".equals(booking.getStatus())) {
+            Toast.makeText(getContext(), "Vé này chưa được thanh toán hoặc đã bị hủy/sử dụng", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        TextView activeView;
-        if (activeStatus.equals("Confirmed")) activeView = filterActive;
-        else if (activeStatus.equals("Used")) activeView = filterUsed;
-        else activeView = filterCancelled;
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_qr_code, null);
+        ImageView ivQr = dialogView.findViewById(R.id.iv_qr_code);
+        TextView tvId = dialogView.findViewById(R.id.tv_qr_booking_id);
+        
+        tvId.setText("ID: #" + booking.getBookingId().substring(0, 8).toUpperCase());
 
-        activeView.setBackgroundResource(R.drawable.bg_chip);
-        activeView.setTextColor(getResources().getColor(R.color.white));
+        final Bitmap[] qrBitmap = {null};
+        try {
+            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+            Bitmap bitmap = barcodeEncoder.encodeBitmap(booking.getBookingId(), BarcodeFormat.QR_CODE, 600, 600);
+            ivQr.setImageBitmap(bitmap);
+            qrBitmap[0] = bitmap;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Lỗi tạo QR Code", Toast.LENGTH_SHORT).show();
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
+                .setView(dialogView)
+                .create();
+
+        dialogView.findViewById(R.id.btn_qr_close).setOnClickListener(v -> dialog.dismiss());
+        dialogView.findViewById(R.id.btn_cancel_ticket).setOnClickListener(v -> handleCancelTicket(booking, dialog));
+
+        dialogView.findViewById(R.id.btn_save_qr).setOnClickListener(v -> {
+            if (qrBitmap[0] != null) {
+                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q &&
+                        androidx.core.content.ContextCompat.checkSelfPermission(requireContext(), 
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
+                } else {
+                    saveBitmapToGallery(qrBitmap[0], "Booking_" + booking.getBookingId().substring(0, 8));
+                }
+            } else {
+                Toast.makeText(getContext(), "Không tìm thấy ảnh QR để tải!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        dialog.show();
     }
 
-    private void resetFilterStyle(TextView view) {
-        view.setBackgroundResource(R.drawable.bg_chip_light);
-        view.setTextColor(getResources().getColor(R.color.ink_dark));
+    private void saveBitmapToGallery(Bitmap bitmap, String title) {
+        if (getContext() == null) return;
+        
+        android.content.ContentResolver resolver = getContext().getContentResolver();
+        android.content.ContentValues contentValues = new android.content.ContentValues();
+        contentValues.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, title + "_" + System.currentTimeMillis() + ".jpg");
+        contentValues.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+        
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            contentValues.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/EventPass");
+            contentValues.put(android.provider.MediaStore.MediaColumns.IS_PENDING, 1);
+        }
+        
+        android.net.Uri imageUri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+        if (imageUri != null) {
+            try {
+                java.io.OutputStream out = resolver.openOutputStream(imageUri);
+                if (out != null) {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    out.close();
+                }
+                
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    contentValues.clear();
+                    contentValues.put(android.provider.MediaStore.MediaColumns.IS_PENDING, 0);
+                    resolver.update(imageUri, contentValues, null, null);
+                }
+                
+                Toast.makeText(getContext(), "Đã lưu vé vào Thư viện ảnh thành công! 💾", Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Không thể lưu vé: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getContext(), "Không thể tạo file trong Thư viện", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void handleCancelTicket(Booking booking, AlertDialog parentDialog) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Xác nhận hủy vé?")
+                .setMessage("Bạn có chắc chắn muốn hủy đơn vé này không? Tiền vé sẽ được hoàn trả vào tài khoản của bạn. Xin lưu ý: Quá trình hoàn tiền sẽ được xử lý trong vòng 3 ngày làm việc.")
+                .setPositiveButton("Hủy vé & Hoàn tiền", (dialogInterface, i) -> {
+                    parentDialog.dismiss();
+
+                    // Tạo Loading Dialog
+                    AlertDialog loadingDialog = new AlertDialog.Builder(getContext())
+                            .setView(new ProgressBar(getContext()))
+                            .setMessage("Đang gửi yêu cầu hoàn tiền...")
+                            .setCancelable(false)
+                            .create();
+                    loadingDialog.show();
+
+                    // Phase B: Đặt trạng thái sang "Refund Pending" — Admin sẽ duyệt và hoàn trả kho vé
+                    booking.setStatus("Refund Pending");
+                    bookingController.saveBooking(booking, () -> {
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                loadingDialog.dismiss();
+                                showRefundNoticeDialog();
+                                loadMyTickets(); // Reload danh sách
+                            });
+                        }
+                    }, err -> {
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                loadingDialog.dismiss();
+                                Toast.makeText(getContext(), "Lỗi gửi yêu cầu: " + err, Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    });
+                })
+                .setNegativeButton("Quay lại", null)
+                .show();
+    }
+
+    private void showRefundNoticeDialog() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Đang chờ hoàn tiền")
+                .setMessage("Yêu cầu hủy vé của bạn đã được ghi nhận thành công.\nHệ thống đang thực hiện hoàn tiền. Vui lòng chờ đợi trong vòng 3 ngày làm việc để tiền được cộng về tài khoản.")
+                .setPositiveButton("Đồng ý", null)
+                .show();
     }
 }

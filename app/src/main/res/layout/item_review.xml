@@ -21,6 +21,7 @@
             app:strokeWidth="1dp"
             app:strokeColor="#EEE">
             <ImageView
+                android:id="@+id/iv_review_user_avatar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
@@ -40,11 +41,12 @@
 
         <RatingBar
             android:id="@+id/rb_review_item_rating"
-            style="?android:attr/ratingBarStyleSmall"
+            style="@style/GoldRatingBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:isIndicator="true"
             android:numStars="5"
+            android:progressTint="@color/star_gold"
             android:stepSize="0.5" />
     </LinearLayout>
 
@@ -57,6 +59,22 @@
         android:textColor="@color/text_muted"
         android:textSize="13sp"
         tools:text="Sự kiện tổ chức rất chuyên nghiệp, âm thanh ánh sáng tuyệt vời!" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_review_item_image"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="42dp"
+        android:layout_marginTop="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp"
+        android:visibility="gone">
+        <ImageView
+            android:id="@+id/iv_review_item_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/tv_review_item_date"

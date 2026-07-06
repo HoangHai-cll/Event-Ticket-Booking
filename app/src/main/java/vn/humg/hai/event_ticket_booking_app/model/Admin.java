@@ -10,7 +10,7 @@ import java.util.List;
 public class Admin extends User {
     
     // --- PHÂN CẤP VÀ QUYỀN HẠN ---
-    private int accessLevel;             // 1: Super Admin (Toàn quyền), 2: Manager (Quản lý), 3: Staff (Nhân viên)
+    private int accessLevel;             // 1: Staff (Nhân viên), 2: Manager (Quản lý), 3: Developer (Bên phát triển)
     private List<String> specificPermissions; // Danh sách mã quyền cụ thể (Vd: "DELETE_EVENT")
     
     // --- KIỂM SOÁT NHANH (FLAGS) ---
@@ -30,13 +30,13 @@ public class Admin extends User {
     private Timestamp lastAdminActionAt; // Thời điểm thực hiện thao tác cuối cùng
     private int bookingsConfirmedCount;  // Số lượng đơn hàng đã xác nhận thành công
     private int bookingsCancelledCount;  // Số lượng đơn hàng đã thực hiện lệnh hủy
-
+ 
     public Admin() {
         super();
         setRole("admin"); // Luôn mặc định role là admin
         this.specificPermissions = new ArrayList<>();
         this.accountStatus = "Active";
-        this.accessLevel = 3; // Mặc định khởi tạo là nhân viên (Staff)
+        this.accessLevel = 1; // Mặc định khởi tạo là nhân viên (Staff - Cấp 1)
         this.totalActionsPerformed = 0;
         this.bookingsConfirmedCount = 0;
         this.bookingsCancelledCount = 0;

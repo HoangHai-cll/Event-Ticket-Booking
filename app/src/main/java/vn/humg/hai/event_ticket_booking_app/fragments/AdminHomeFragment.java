@@ -236,4 +236,12 @@ public class AdminHomeFragment extends Fragment {
         super.onResume();
         loadEvents();
     }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            loadEvents();
+        }
+    }
 }

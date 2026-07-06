@@ -103,6 +103,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
             findViewById(R.id.btn_admin_manage_reviews_link).setOnClickListener(v -> 
                 startActivity(new Intent(this, AdminManageReviewsActivity.class)));
         }
+        if (findViewById(R.id.btn_admin_manage_vouchers) != null) {
+            findViewById(R.id.btn_admin_manage_vouchers).setOnClickListener(v -> 
+                startActivity(new Intent(this, AdminManageVouchersActivity.class)));
+        }
     }
 
 
@@ -110,25 +114,75 @@ public class AdminDashboardActivity extends AppCompatActivity {
         swipeRefresh.setRefreshing(true);
         
         String uid = FirebaseAuth.getInstance().getUid();
-        if (uid != null) {
-            userController.getUserById(uid, user -> {
-                if (user != null) runOnUiThread(() -> tvWelcomeName.setText("Chào mừng, " + user.getFullName()));
-            }, e -> {});
+        if (uid == null) {
+            hideLoading();
+            return;
         }
 
-        userController.getAllUsers(users -> {
-            eventController.getAllEvents(events -> {
-                bookingController.getAllBookings(bookings -> {
-                    reviewController.getAllReviews(reviews -> {
-                        processDashboardData(users, events, bookings, reviews);
+        userController.getAdminById(uid, admin -> {
+            if (admin != null) {
+                runOnUiThread(() -> tvWelcomeName.setText("Chào mừng, " + admin.getFullName()));
+                
+                final int accessLevel = admin.getAccessLevel();
+                
+                userController.getAllUsers(users -> {
+                    eventController.getAllEvents(events -> {
+                        bookingController.getAllBookings(bookings -> {
+                            reviewController.getAllReviews(reviews -> {
+                                processDashboardData(uid, accessLevel, users, events, bookings, reviews);
+                            }, e -> hideLoading());
+                        }, e -> hideLoading());
                     }, e -> hideLoading());
                 }, e -> hideLoading());
-            }, e -> hideLoading());
+            } else {
+                hideLoading();
+            }
         }, e -> hideLoading());
     }
 
-    private void processDashboardData(List<User> users, List<Event> events, List<Booking> bookings, List<Review> reviews) {
-        runOnUiThread(() -> tvTotalUsers.setText(String.valueOf(users.size())));
+    private void processDashboardData(String currentAdminId, int accessLevel, List<User> users, List<Event> events, List<Booking> bookings, List<Review> reviews) {
+        // Lọc dữ liệu theo admin nếu không phải là Developer (Cấp 3)
+        List<Event> filteredEvents = new ArrayList<>();
+        List<Booking> filteredBookings = new ArrayList<>();
+        List<Review> filteredReviews = new ArrayList<>();
+        
+        if (accessLevel == 3) {
+            filteredEvents.addAll(events);
+            filteredBookings.addAll(bookings);
+            filteredReviews.addAll(reviews);
+        } else {
+            // Lọc sự kiện do chính admin này tạo
+            java.util.Set<String> myEventIds = new java.util.HashSet<>();
+            for (Event e : events) {
+                if (currentAdminId.equals(e.getCreatedByAdminId())) {
+                    filteredEvents.add(e);
+                    myEventIds.add(e.getEventId());
+                }
+            }
+            
+            // Lọc giao dịch thuộc sự kiện của admin này (sellerId == currentAdminId)
+            for (Booking b : bookings) {
+                if (currentAdminId.equals(b.getSellerId())) {
+                    filteredBookings.add(b);
+                }
+            }
+            
+            // Lọc đánh giá thuộc sự kiện của admin này
+            for (Review r : reviews) {
+                if (myEventIds.contains(r.getEventId())) {
+                    filteredReviews.add(r);
+                }
+            }
+        }
+
+        // Đếm số lượng khách hàng mua vé của admin này
+        java.util.Set<String> uniqueCustomerIds = new java.util.HashSet<>();
+        for (Booking b : filteredBookings) {
+            uniqueCustomerIds.add(b.getUserId());
+        }
+        
+        final int totalCustomersCount = (accessLevel == 3) ? users.size() : uniqueCustomerIds.size();
+        runOnUiThread(() -> tvTotalUsers.setText(String.valueOf(totalCustomersCount)));
         
         double totalRev = 0, todayRev = 0, monthRev = 0;
         int tickets = 0;
@@ -136,7 +190,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         Map<String, Double> eventRevenueMap = new HashMap<>();
         Map<String, Double> userSpentMap = new HashMap<>();
         
-        for (Booking b : bookings) {
+        for (Booking b : filteredBookings) {
             if (isPaid(b.getStatus())) {
                 double p = b.getTotalPrice();
                 totalRev += p;
@@ -166,16 +220,16 @@ public class AdminDashboardActivity extends AppCompatActivity {
             tvTotalTickets.setText(String.valueOf(ftk));
         });
 
-        if (!reviews.isEmpty()) {
+        if (!filteredReviews.isEmpty()) {
             float sum = 0;
             int[] stars = new int[6];
-            for (Review r : reviews) {
+            for (Review r : filteredReviews) {
                 sum += r.getRating();
                 int s = Math.round(r.getRating());
                 if (s >= 1 && s <= 5) stars[s]++;
             }
-            final float avg = sum / reviews.size();
-            final int totalR = reviews.size();
+            final float avg = sum / filteredReviews.size();
+            final int totalR = filteredReviews.size();
             final int[] fs = stars;
             runOnUiThread(() -> {
                 tvAvgRating.setText(String.format(Locale.getDefault(), "⭐ %.1f", avg));
@@ -185,12 +239,21 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 pb2.setProgress(totalR > 0 ? (int) (fs[2] * 100.0 / totalR) : 0);
                 pb1.setProgress(totalR > 0 ? (int) (fs[1] * 100.0 / totalR) : 0);
             });
+        } else {
+            runOnUiThread(() -> {
+                tvAvgRating.setText("⭐ 0.0");
+                pb5.setProgress(0);
+                pb4.setProgress(0);
+                pb3.setProgress(0);
+                pb2.setProgress(0);
+                pb1.setProgress(0);
+            });
         }
 
         // Xử lý báo cáo danh mục
         Map<String, AdminCategoryReportAdapter.CategoryStats> catStatsMap = new HashMap<>();
         Map<String, String> eventToCat = new HashMap<>();
-        for (Event e : events) {
+        for (Event e : filteredEvents) {
             eventToCat.put(e.getEventId(), e.getCategory());
             String cat = (e.getCategory() == null || e.getCategory().isEmpty()) ? "Khác" : e.getCategory();
             if (!catStatsMap.containsKey(cat)) catStatsMap.put(cat, new AdminCategoryReportAdapter.CategoryStats(cat));
@@ -199,7 +262,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
             s.reviewCount += e.getReviewCount();
         }
         
-        for (Booking b : bookings) {
+        for (Booking b : filteredBookings) {
             if (isPaid(b.getStatus())) {
                 String cat = eventToCat.get(b.getEventId());
                 if (cat == null) cat = "Khác";
@@ -214,7 +277,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         }
 
         Map<String, String> eventNames = new HashMap<>();
-        for (Event e : events) eventNames.put(e.getEventId(), e.getTitle());
+        for (Event e : filteredEvents) eventNames.put(e.getEventId(), e.getTitle());
         Map<String, String> userNames = new HashMap<>();
         for (User u : users) userNames.put(u.getUid(), u.getFullName());
 
@@ -223,7 +286,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         List<Map.Entry<String, Double>> topUs = new ArrayList<>(userSpentMap.entrySet());
         topUs.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
         
-        List<Booking> recentBookings = new ArrayList<>(bookings);
+        List<Booking> recentBookings = new ArrayList<>(filteredBookings);
         recentBookings.sort((b1, b2) -> {
             if (b1.getBookingDate() == null || b2.getBookingDate() == null) return 0;
             return b2.getBookingDate().compareTo(b1.getBookingDate());
@@ -243,7 +306,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
             rvRecentBookings.setAdapter(new TransactionAdapter(recentBookings.subList(0, Math.min(recentBookings.size(), 5))));
 
             rvRecentReviews.setLayoutManager(new LinearLayoutManager(this));
-            rvRecentReviews.setAdapter(new AdminReviewAdapter(reviews.subList(0, Math.min(reviews.size(), 3)), null));
+            rvRecentReviews.setAdapter(new AdminReviewAdapter(filteredReviews.subList(0, Math.min(filteredReviews.size(), 3)), null));
             
             hideLoading();
         });

@@ -11,6 +11,15 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import android.net.Uri;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import android.view.View;
+import android.widget.ImageButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import android.app.ProgressDialog;
 import java.util.UUID;
 import vn.humg.hai.event_ticket_booking_app.R;
 import vn.humg.hai.event_ticket_booking_app.controller.EventController;
@@ -29,7 +38,13 @@ public class ReviewSubmitActivity extends AppCompatActivity {
     private TextView tvEventTitle;
     private RatingBar rbRating;
     private TextInputEditText edtComment;
-    private MaterialButton btnSubmit;
+    private MaterialButton btnSubmit, btnAddImage;
+    private ImageButton btnRemoveImage;
+    private ImageView ivUploadPreview;
+    private MaterialCardView cardReviewImage;
+    
+    private Uri selectedImageUri = null;
+    private ActivityResultLauncher<String> imagePickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +73,29 @@ public class ReviewSubmitActivity extends AppCompatActivity {
         rbRating = findViewById(R.id.rb_submit_rating);
         edtComment = findViewById(R.id.edt_review_comment);
         btnSubmit = findViewById(R.id.btn_submit_review);
+        btnAddImage = findViewById(R.id.btn_add_image);
+        btnRemoveImage = findViewById(R.id.btn_remove_image);
+        ivUploadPreview = findViewById(R.id.iv_review_upload_preview);
+        cardReviewImage = findViewById(R.id.card_review_image);
+
+        imagePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                selectedImageUri = uri;
+                cardReviewImage.setVisibility(View.VISIBLE);
+                btnRemoveImage.setVisibility(View.VISIBLE);
+                ivUploadPreview.setImageURI(uri);
+            }
+        });
     }
 
     private void initEvents() {
         btnSubmit.setOnClickListener(v -> submitReview());
+        btnAddImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
+        btnRemoveImage.setOnClickListener(v -> {
+            selectedImageUri = null;
+            cardReviewImage.setVisibility(View.GONE);
+            btnRemoveImage.setVisibility(View.GONE);
+        });
     }
 
     private void loadEventInfo() {
@@ -93,6 +127,37 @@ public class ReviewSubmitActivity extends AppCompatActivity {
         btnSubmit.setEnabled(false);
         btnSubmit.setText("Đang gửi...");
 
+        if (selectedImageUri != null) {
+            uploadImageAndSaveReview(userId, rating, comment);
+        } else {
+            finalizeSaveReview(userId, rating, comment, null);
+        }
+    }
+
+    private void uploadImageAndSaveReview(String userId, float rating, String comment) {
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Đang tải ảnh lên...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference("review_images/" + UUID.randomUUID().toString());
+        storageRef.putFile(selectedImageUri).addOnSuccessListener(taskSnapshot -> {
+            storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                progressDialog.dismiss();
+                finalizeSaveReview(userId, rating, comment, uri.toString());
+            }).addOnFailureListener(e -> {
+                progressDialog.dismiss();
+                resetSubmitButton();
+                Toast.makeText(this, "Lỗi lấy link ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+        }).addOnFailureListener(e -> {
+            progressDialog.dismiss();
+            resetSubmitButton();
+            Toast.makeText(this, "Lỗi upload ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void finalizeSaveReview(String userId, float rating, String comment, String imageUrl) {
         userController.getUserById(userId, user -> {
             Review review = new Review();
             review.setReviewId(UUID.randomUUID().toString());
@@ -101,6 +166,7 @@ public class ReviewSubmitActivity extends AppCompatActivity {
             review.setUserName(user != null ? user.getFullName() : "Người dùng");
             review.setRating(rating);
             review.setComment(comment);
+            review.setImageUrl(imageUrl);
             review.setCreatedAt(Timestamp.now());
 
             reviewController.saveReview(review, () -> {
@@ -110,16 +176,17 @@ public class ReviewSubmitActivity extends AppCompatActivity {
                 });
             }, error -> {
                 runOnUiThread(() -> {
-                    btnSubmit.setEnabled(true);
-                    btnSubmit.setText("Gửi đánh giá");
+                    resetSubmitButton();
                     Toast.makeText(this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
                 });
             });
         }, error -> {
-            runOnUiThread(() -> {
-                btnSubmit.setEnabled(true);
-                btnSubmit.setText("Gửi đánh giá");
-            });
+            runOnUiThread(this::resetSubmitButton);
         });
+    }
+
+    private void resetSubmitButton() {
+        btnSubmit.setEnabled(true);
+        btnSubmit.setText("Gửi đánh giá");
     }
 }

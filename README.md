@@ -28,7 +28,7 @@
 
 | Trang chủ | Vé của tôi | Lịch sử giao dịch | Hồ sơ & Thành viên |
 |:---:|:---:|:---:|:---:|
-| <img src="screenshots/home.png" width="200"> | <img src="screenshots/tickets.png" width="200"> | <img src="screenshots/history.png" width="200"> | <img src="screenshots/profile.png" width="200"> |
+| <img src="https://raw.githubusercontent.com/HoangHai-cll/Event-Ticket-Booking/main/screenshots/home.png" width="200"> | <img src="https://raw.githubusercontent.com/HoangHai-cll/Event-Ticket-Booking/main/screenshots/tickets.png" width="200"> | <img src="https://raw.githubusercontent.com/HoangHai-cll/Event-Ticket-Booking/main/screenshots/history.png" width="200"> | <img src="https://raw.githubusercontent.com/HoangHai-cll/Event-Ticket-Booking/main/screenshots/profile.png" width="200"> |
 
 > *Lưu ý: Vui lòng lưu các ảnh chụp màn hình vào thư mục `/screenshots` trong repository để hiển thị.*
 

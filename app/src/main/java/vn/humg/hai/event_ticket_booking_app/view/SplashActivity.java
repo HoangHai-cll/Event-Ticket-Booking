@@ -15,6 +15,17 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        // Kích hoạt tường minh tính năng lưu ngoại tuyến (Offline Persistence) cho Firestore
+        try {
+            com.google.firebase.firestore.FirebaseFirestoreSettings settings = 
+                new com.google.firebase.firestore.FirebaseFirestoreSettings.Builder()
+                    .setPersistenceEnabled(true)
+                    .build();
+            com.google.firebase.firestore.FirebaseFirestore.getInstance().setFirestoreSettings(settings);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Chờ 2 giây rồi kiểm tra đăng nhập
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {

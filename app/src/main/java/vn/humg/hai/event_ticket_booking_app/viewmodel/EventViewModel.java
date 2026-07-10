@@ -149,12 +149,18 @@ public class EventViewModel extends ViewModel {
 
                     if (isFav) {
                         favoriteRepository.removeFromFavorite(userId, event.getEventId(),
-                                () -> _isFavoriteState.postValue(false),
+                                () -> {
+                                    _isFavoriteState.postValue(false);
+                                    loadUserFavorites(userId);
+                                },
                                 error -> _errorState.postValue(error));
                     } else {
                         Favorite fav = new Favorite(userId + "_" + event.getEventId(), userId, event.getEventId());
                         favoriteRepository.addToFavorite(fav,
-                                () -> _isFavoriteState.postValue(true),
+                                () -> {
+                                    _isFavoriteState.postValue(true);
+                                    loadUserFavorites(userId);
+                                },
                                 error -> _errorState.postValue(error));
                     }
                 },

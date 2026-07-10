@@ -131,28 +131,23 @@ public class TicketsFragment extends Fragment {
             if (missingEventIds.isEmpty()) {
                 getActivity().runOnUiThread(updateUI);
             } else {
-                // Tải song song các sự kiện còn thiếu
-                final int[] count = {missingEventIds.size()};
-                for (String id : missingEventIds) {
-                    eventController.getEventById(id, event -> {
-                        if (event != null) {
-                            eventCache.put(id, event);
-                        }
-                        synchronized (count) {
-                            count[0]--;
-                            if (count[0] == 0 && isAdded() && getActivity() != null) {
-                                getActivity().runOnUiThread(updateUI);
+                // Tải gộp các sự kiện còn thiếu trong 1 truy vấn duy nhất để giải quyết N+1 Query
+                eventController.getEventsByIds(missingEventIds, events -> {
+                    if (events != null) {
+                        for (Event event : events) {
+                            if (event != null && event.getEventId() != null) {
+                                eventCache.put(event.getEventId(), event);
                             }
                         }
-                    }, error -> {
-                        synchronized (count) {
-                            count[0]--;
-                            if (count[0] == 0 && isAdded() && getActivity() != null) {
-                                getActivity().runOnUiThread(updateUI);
-                            }
-                        }
-                    });
-                }
+                    }
+                    if (isAdded() && getActivity() != null) {
+                        getActivity().runOnUiThread(updateUI);
+                    }
+                }, error -> {
+                    if (isAdded() && getActivity() != null) {
+                        getActivity().runOnUiThread(updateUI);
+                    }
+                });
             }
         }, error -> {
             if (!isAdded() || getActivity() == null) return;

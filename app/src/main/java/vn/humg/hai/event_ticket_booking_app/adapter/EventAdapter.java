@@ -8,23 +8,21 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import com.google.firebase.auth.FirebaseAuth;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import vn.humg.hai.event_ticket_booking_app.R;
-import vn.humg.hai.event_ticket_booking_app.controller.FavoriteController;
 import vn.humg.hai.event_ticket_booking_app.model.Event;
-import vn.humg.hai.event_ticket_booking_app.model.Favorite;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     private final List<Event> events;
     private final OnEventClickListener listener;
-    private final FavoriteController favoriteController = new FavoriteController();
+    private final OnFavoriteClickListener favoriteClickListener;
     private final Set<String> favoriteEventIds = new HashSet<>(); 
     private boolean isHorizontal = false;
     
@@ -38,15 +36,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         void onFavoriteChanged(String eventId, boolean isAdded);
     }
 
-    public EventAdapter(List<Event> events, OnEventClickListener listener) {
-        this.events = events;
-        this.listener = listener;
+    public interface OnFavoriteClickListener {
+        void onFavoriteClick(Event event);
     }
 
-    public EventAdapter(List<Event> events, boolean isHorizontal, OnEventClickListener listener) {
+    public EventAdapter(List<Event> events, OnEventClickListener listener, OnFavoriteClickListener favoriteClickListener) {
+        this.events = events;
+        this.listener = listener;
+        this.favoriteClickListener = favoriteClickListener;
+    }
+
+    public EventAdapter(List<Event> events, boolean isHorizontal, OnEventClickListener listener, OnFavoriteClickListener favoriteClickListener) {
         this.events = events;
         this.isHorizontal = isHorizontal;
         this.listener = listener;
+        this.favoriteClickListener = favoriteClickListener;
     }
 
     public void setOnFavoriteChangeListener(OnFavoriteChangeListener listener) {
@@ -126,55 +130,19 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         boolean isFav = favoriteEventIds.contains(event.getEventId());
         if (isFav) {
             holder.tvFavorite.setImageResource(R.drawable.ic_heart_filled);
-            holder.tvFavorite.setColorFilter(0xFFFF69B4); // Pink color
+            holder.tvFavorite.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.color_favorite));
         } else {
             holder.tvFavorite.setImageResource(R.drawable.ic_heart);
-            holder.tvFavorite.setColorFilter(0xFFB0BEC5); // Gray color
+            holder.tvFavorite.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.color_favorite_inactive));
         }
 
-        holder.tvFavorite.setOnClickListener(v -> handleFavoriteClick(event, holder.tvFavorite));
+        holder.tvFavorite.setOnClickListener(v -> {
+            if (favoriteClickListener != null) {
+                favoriteClickListener.onFavoriteClick(event);
+            }
+        });
         holder.itemView.setOnClickListener(v -> listener.onEventClick(event));
         holder.bookButton.setOnClickListener(v -> listener.onEventClick(event));
-    }
-
-    private void handleFavoriteClick(Event event, ImageView ivFav) {
-        String userId = FirebaseAuth.getInstance().getUid();
-        if (userId == null) {
-            Toast.makeText(ivFav.getContext(), "Vui lòng đăng nhập để thích sự kiện", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String eventId = event.getEventId();
-        if (favoriteEventIds.contains(eventId)) {
-            favoriteController.removeFromFavorite(userId, eventId, () -> {
-                ivFav.post(() -> {
-                    favoriteEventIds.remove(eventId);
-                    ivFav.setImageResource(R.drawable.ic_heart);
-                    ivFav.setColorFilter(0xFFB0BEC5); // Gray color
-                    Toast.makeText(ivFav.getContext(), "Đã bỏ thích sự kiện", Toast.LENGTH_SHORT).show();
-                    if (favoriteListener != null) {
-                        favoriteListener.onFavoriteChanged(eventId, false);
-                    }
-                });
-            }, error -> {
-                ivFav.post(() -> Toast.makeText(ivFav.getContext(), "Lỗi: " + error, Toast.LENGTH_SHORT).show());
-            });
-        } else {
-            Favorite fav = new Favorite(userId + "_" + eventId, userId, eventId);
-            favoriteController.addToFavorite(fav, () -> {
-                ivFav.post(() -> {
-                    favoriteEventIds.add(eventId);
-                    ivFav.setImageResource(R.drawable.ic_heart_filled);
-                    ivFav.setColorFilter(0xFFFF69B4); // Pink color
-                    Toast.makeText(ivFav.getContext(), "Đã thích sự kiện", Toast.LENGTH_SHORT).show();
-                    if (favoriteListener != null) {
-                        favoriteListener.onFavoriteChanged(eventId, true);
-                    }
-                });
-            }, error -> {
-                ivFav.post(() -> Toast.makeText(ivFav.getContext(), "Lỗi: " + error, Toast.LENGTH_SHORT).show());
-            });
-        }
     }
 
     @Override

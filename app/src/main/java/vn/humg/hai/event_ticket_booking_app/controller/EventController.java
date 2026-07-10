@@ -38,6 +38,48 @@ public class EventController {
                 })
                 .addOnFailureListener(e -> onError.accept(e.getMessage()));
     }
+    
+    public void getEventsByIds(List<String> eventIds, Consumer<List<Event>> onSuccess, Consumer<String> onError) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            onSuccess.accept(new ArrayList<>());
+            return;
+        }
+        
+        List<Event> allEvents = new ArrayList<>();
+        int batchSize = 30;
+        int totalSize = eventIds.size();
+        final int[] pendingQueries = {(int) Math.ceil((double) totalSize / batchSize)};
+        
+        for (int i = 0; i < totalSize; i += batchSize) {
+            List<String> batch = eventIds.subList(i, Math.min(i + batchSize, totalSize));
+            
+            firestore.collection(EVENTS_COLLECTION)
+                    .whereIn(com.google.firebase.firestore.FieldPath.documentId(), batch)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        for (DocumentSnapshot doc : querySnapshot) {
+                            Event event = doc.toObject(Event.class);
+                            if (event != null) {
+                                allEvents.add(event);
+                            }
+                        }
+                        synchronized (pendingQueries) {
+                            pendingQueries[0]--;
+                            if (pendingQueries[0] == 0) {
+                                onSuccess.accept(allEvents);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        synchronized (pendingQueries) {
+                            if (pendingQueries[0] > 0) {
+                                pendingQueries[0] = 0; // Chặn các callback lỗi khác
+                                onError.accept(e.getMessage());
+                            }
+                        }
+                    });
+        }
+    }
 
     public void getAllEvents(Consumer<List<Event>> onSuccess, Consumer<String> onError) {
         firestore.collection(EVENTS_COLLECTION)

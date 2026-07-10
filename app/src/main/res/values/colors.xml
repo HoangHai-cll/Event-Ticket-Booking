@@ -23,4 +23,8 @@
     <color name="warning">#F59E0B</color>
     <color name="star_gold">#FFD200</color>
     <color name="plum_dark">#2B0C3F</color>
+    
+    <!-- Yêu thích -->
+    <color name="color_favorite">#FFFF69B4</color>
+    <color name="color_favorite_inactive">#B0BEC5</color>
 </resources>

@@ -11,6 +11,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import vn.humg.hai.event_ticket_booking_app.R;
 import vn.humg.hai.event_ticket_booking_app.adapter.AuthResultAdapter;
+import vn.humg.hai.event_ticket_booking_app.utils.ValidationUtils;
 import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -107,6 +108,17 @@ public class RegisterActivity extends AppCompatActivity {
             }
 
             if (!rawEmail.contains("@")) rawEmail += "@gmail.com";
+
+            if (!ValidationUtils.isValidEmail(rawEmail)) {
+                Toast.makeText(this, "Định dạng Email không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!ValidationUtils.isValidPassword(rawPassword)) {
+                Toast.makeText(this, "Mật khẩu phải chứa ít nhất 6 ký tự", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             if (!rawPassword.equals(confirmPassword)) {
                 Toast.makeText(this, "Mật khẩu không khớp", Toast.LENGTH_SHORT).show();
                 return;

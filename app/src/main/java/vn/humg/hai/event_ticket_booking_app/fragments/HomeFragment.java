@@ -188,11 +188,11 @@ public class HomeFragment extends Fragment {
 
     private void setupRecyclerView() {
         recyclerHotEvents.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        hotEventAdapter = new EventAdapter(hotEventList, true, this::openEventDetail);
+        hotEventAdapter = new EventAdapter(hotEventList, true, this::openEventDetail, this::handleFavoriteClick);
         recyclerHotEvents.setAdapter(hotEventAdapter);
 
         recyclerEvents.setLayoutManager(new LinearLayoutManager(getContext()));
-        eventAdapter = new EventAdapter(displayList, false, this::openEventDetail);
+        eventAdapter = new EventAdapter(displayList, false, this::openEventDetail, this::handleFavoriteClick);
         recyclerEvents.setAdapter(eventAdapter);
 
         // Synchronize favorites between adapters and re-sort lists dynamically
@@ -214,6 +214,22 @@ public class HomeFragment extends Fragment {
 
         eventAdapter.setOnFavoriteChangeListener(favListener);
         hotEventAdapter.setOnFavoriteChangeListener(favListener);
+    }
+
+    private void handleFavoriteClick(Event event) {
+        String userId = FirebaseAuth.getInstance().getUid();
+        if (userId == null) {
+            Toast.makeText(getContext(), "Vui lòng đăng nhập để thích sự kiện", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        boolean isFavNow = userFavoriteIds.contains(event.getEventId());
+        if (isFavNow) {
+            Toast.makeText(getContext(), "Đã bỏ thích sự kiện", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getContext(), "Đã thích sự kiện", Toast.LENGTH_SHORT).show();
+        }
+        eventViewModel.toggleFavorite(userId, event);
     }
 
     private void initEvents() {

@@ -12,6 +12,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import androidx.lifecycle.ViewModelProvider;
 import vn.humg.hai.event_ticket_booking_app.adapter.AuthResultAdapter;
+import vn.humg.hai.event_ticket_booking_app.utils.ValidationUtils;
 import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 
 public class LoginActivity extends AppCompatActivity {
@@ -113,7 +114,17 @@ public class LoginActivity extends AppCompatActivity {
             String password = edtPassword.getText() != null ? edtPassword.getText().toString().trim() : "";
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Vui lòng nhập email và mật khẩu.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Vui lòng nhập đầy đủ email và mật khẩu.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!ValidationUtils.isValidEmail(email)) {
+                Toast.makeText(this, "Định dạng Email không hợp lệ.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!ValidationUtils.isValidPassword(password)) {
+                Toast.makeText(this, "Mật khẩu phải chứa ít nhất 6 ký tự.", Toast.LENGTH_SHORT).show();
                 return;
             }
 

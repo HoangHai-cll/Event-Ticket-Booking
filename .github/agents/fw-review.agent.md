@@ -1,10 +1,10 @@
 ---
 name: "fw-review"
-description: "Code review sub-agent for Fluid Wallpaper. Returns findings with severity."
-model: Claude Sonnet 4.6
+description: "Code review sub-agent for Event Ticket Booking App. Returns findings with severity."
+model: Claude 3.5 Sonnet
 ---
 
-# Fluid Wallpaper — Review Agent
+# Event Ticket Booking App — Review Agent
 
 Sub-agent called from `fw-coding`. Reviews code changes and returns findings.
 
@@ -25,23 +25,22 @@ Sub-agent called from `fw-coding`. Reviews code changes and returns findings.
 
 ### 1. Scope
 - Do the changes affect modules/files outside the scope?
-- Native C++ changes: check JNI boundary safety, memory management
+- Check for unintended resource changes or hardcoded values.
 
 ### 2. Requirements
 - Does the code fully implement the requirements?
-- Are edge cases handled?
+- Are edge cases handled (e.g., null data, empty lists)?
 
 ### 3. Design
-- Any over-engineering?
-- Does it follow existing patterns in `app/src/main/`?
+- Does it follow the MVC pattern established in the project?
+- Any duplicate logic?
 
 ### 4. Implementation
-- Follows conventions: Follow existing code style
-- No leftover TODO/placeholders; no changes outside scope
+- Follows Android conventions (using @string for text, no hardcoded colors).
+- Clean code: readable variable names, proper method decomposition.
 
 ### 5. Test
-- Can the change be verified? (unit test or manual)
-- If tests exist: cover happy path + edge case, tests are independent
+- Can the change be verified manually or via unit tests?
 
 ## Output format
 
@@ -58,6 +57,6 @@ Sub-agent called from `fw-coding`. Reviews code changes and returns findings.
 
 ## Rules
 
-- Findings must have specific file + line/function
-- Do not criticize style if code follows existing conventions
-- On re-review: only re-check previous findings, do not add new findings about old code
+- Findings must have specific file + line/function.
+- Do not criticize style if code follows existing conventions.
+- On re-review: only re-check previous findings, do not add new findings about old code.

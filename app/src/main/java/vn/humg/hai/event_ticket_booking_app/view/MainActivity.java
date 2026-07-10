@@ -19,6 +19,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import android.widget.ImageButton;
 import com.bumptech.glide.Glide;
+import vn.humg.hai.event_ticket_booking_app.controller.ConfigController;
 
 import vn.humg.hai.event_ticket_booking_app.R;
 import androidx.lifecycle.ViewModelProvider;
@@ -32,12 +33,20 @@ import vn.humg.hai.event_ticket_booking_app.fragments.ProfileFragment;
 import vn.humg.hai.event_ticket_booking_app.fragments.TicketsFragment;
 import vn.humg.hai.event_ticket_booking_app.view.SettingsActivity;
 import vn.humg.hai.event_ticket_booking_app.view.HelpCenterActivity;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
+import androidx.activity.result.ActivityResultLauncher;
+import android.widget.Toast;
+import android.os.Vibrator;
+import android.os.VibrationEffect;
+import android.os.Build;
+import android.content.Context;
 
 public class MainActivity extends AppCompatActivity {
 
-    private LinearLayout navHome, navAdmin, navTickets, navHistory, navProfile;
-    private TextView tvHomeText, tvAdminText, tvTicketsText, tvHistoryText, tvProfileText;
-    private ImageView ivHomeIcon, ivAdminIcon, ivTicketsIcon, ivHistoryIcon, ivProfileIcon;
+    private LinearLayout navHome, navAdmin, navScanQr, navTickets, navHistory, navProfile;
+    private TextView tvHomeText, tvAdminText, tvScanText, tvTicketsText, tvHistoryText, tvProfileText;
+    private ImageView ivHomeIcon, ivAdminIcon, ivScanIcon, ivTicketsIcon, ivHistoryIcon, ivProfileIcon;
     
     private Fragment homeFragment, adminFragment, ticketsFragment, historyFragment, profileFragment;
     private Fragment activeFragment;
@@ -50,6 +59,24 @@ public class MainActivity extends AppCompatActivity {
     private boolean isUserAdmin = false;
     private String pendingTargetTab = null;
 
+    private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(),
+            result -> {
+                if (result.getContents() == null) {
+                    Toast.makeText(MainActivity.this, "Đã hủy quét mã QR", Toast.LENGTH_SHORT).show();
+                } else {
+                    vibrateOnScan();
+                    Toast.makeText(this, "Đã đọc mã thành công!", Toast.LENGTH_SHORT).show();
+                    // Khi quét từ màn hình chính, chúng ta chuyển sang tab Admin và xử lý
+                    navigateToTab("Admin");
+                    if (adminFragment instanceof AdminDashboardFragment) {
+                        // Có thể thêm logic xử lý trực tiếp ở đây hoặc gửi sang AdminDashboardFragment
+                        Intent intent = new Intent(this, AdminManageBookingsActivity.class);
+                        intent.putExtra("SCANNED_QR_ID", result.getContents());
+                        startActivity(intent);
+                    }
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         fm = getSupportFragmentManager();
         initViews();
         setupNavigation();
+        ConfigController.getInstance().fetchAndActivate();
         checkUserRoleAndSetupFragments(savedInstanceState);
         
         handleIntent(getIntent());
@@ -69,18 +97,21 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         navHome = findViewById(R.id.nav_home);
         navAdmin = findViewById(R.id.nav_admin);
+        navScanQr = findViewById(R.id.nav_scan_qr);
         navTickets = findViewById(R.id.nav_tickets);
         navHistory = findViewById(R.id.nav_history);
         navProfile = findViewById(R.id.nav_profile);
 
         tvHomeText = findViewById(R.id.tv_nav_home_text);
         tvAdminText = findViewById(R.id.tv_nav_admin_text);
+        tvScanText = findViewById(R.id.tv_nav_scan_text);
         tvTicketsText = findViewById(R.id.tv_nav_tickets_text);
         tvHistoryText = findViewById(R.id.tv_nav_history_text);
         tvProfileText = findViewById(R.id.tv_nav_profile_text);
 
         ivHomeIcon = findViewById(R.id.iv_nav_home_icon);
         ivAdminIcon = findViewById(R.id.iv_nav_admin_icon);
+        ivScanIcon = findViewById(R.id.iv_nav_scan_icon);
         ivTicketsIcon = findViewById(R.id.iv_nav_tickets_icon);
         ivHistoryIcon = findViewById(R.id.iv_nav_history_icon);
         ivProfileIcon = findViewById(R.id.iv_nav_profile_icon);
@@ -158,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
             if (isAdmin) {
                 // Giao diện cho Admin
                 navAdmin.setVisibility(View.VISIBLE);
+                navScanQr.setVisibility(View.VISIBLE);
                 navTickets.setVisibility(View.GONE);
                 navHistory.setVisibility(View.GONE);
                 
@@ -171,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 // Giao diện cho User
                 navAdmin.setVisibility(View.GONE);
+                navScanQr.setVisibility(View.GONE);
                 navTickets.setVisibility(View.VISIBLE);
                 navHistory.setVisibility(View.VISIBLE);
                 
@@ -210,6 +243,16 @@ public class MainActivity extends AppCompatActivity {
     private void setupNavigation() {
         navHome.setOnClickListener(v -> navigateToTab("Home"));
         navAdmin.setOnClickListener(v -> navigateToTab("Admin"));
+        navScanQr.setOnClickListener(v -> {
+            ScanOptions options = new ScanOptions();
+            options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
+            options.setPrompt("Quét mã vé để check-in");
+            options.setCameraId(0);
+            options.setBeepEnabled(true);
+            options.setOrientationLocked(true);
+            options.setCaptureActivity(CustomScannerActivity.class);
+            barcodeLauncher.launch(options);
+        });
         navTickets.setOnClickListener(v -> navigateToTab("Tickets"));
         navHistory.setOnClickListener(v -> navigateToTab("History"));
         navProfile.setOnClickListener(v -> navigateToTab("Profile"));
@@ -290,6 +333,7 @@ public class MainActivity extends AppCompatActivity {
 
         navHome.setBackground(null);
         navAdmin.setBackground(null);
+        navScanQr.setBackground(null);
         navTickets.setBackground(null);
         navHistory.setBackground(null);
         navProfile.setBackground(null);
@@ -297,12 +341,14 @@ public class MainActivity extends AppCompatActivity {
         int mutedColor = ContextCompat.getColor(this, R.color.text_muted);
         tvHomeText.setTextColor(mutedColor);
         tvAdminText.setTextColor(mutedColor);
+        if (tvScanText != null) tvScanText.setTextColor(mutedColor);
         tvTicketsText.setTextColor(mutedColor);
         tvHistoryText.setTextColor(mutedColor);
         tvProfileText.setTextColor(mutedColor);
 
         if (ivHomeIcon != null) ivHomeIcon.setColorFilter(mutedColor);
         if (ivAdminIcon != null) ivAdminIcon.setColorFilter(mutedColor);
+        if (ivScanIcon != null) ivScanIcon.setColorFilter(mutedColor);
         if (ivTicketsIcon != null) ivTicketsIcon.setColorFilter(mutedColor);
         if (ivHistoryIcon != null) ivHistoryIcon.setColorFilter(mutedColor);
         if (ivProfileIcon != null) ivProfileIcon.setColorFilter(mutedColor);
@@ -370,5 +416,16 @@ public class MainActivity extends AppCompatActivity {
             dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
         }
         dialog.show();
+    }
+
+    private void vibrateOnScan() {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator != null && vibrator.hasVibrator()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(150, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(150);
+            }
+        }
     }
 }

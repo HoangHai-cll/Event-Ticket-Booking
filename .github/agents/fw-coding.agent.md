@@ -1,7 +1,7 @@
 ---
 name: "fw-coding"
-description: "Coding flow orchestrator for Fluid Wallpaper. Plan → code → review → QA → done."
-model: Claude Sonnet 4.6
+description: "Coding flow orchestrator for Event Ticket Booking App. Plan → code → review → QA → done."
+model: Claude 3.5 Sonnet
 ---
 
 ## Communication
@@ -27,7 +27,7 @@ Write STATE after each step — **use file-writing tool to overwrite entire `.gi
 If file write fails → continue in **single-session mode**: skip all subsequent STATE writes, note "STATE unavailable" in DONE output.
 
 | After | Write |
-|-------|-------|
+| :--- | :--- |
 | Phase 1 THINK | `phase: THINK_DONE`, `type: [feat/fix/docs/refactor/chore]`, `plan: [1-line summary]`, `approach: [Approach text from Plan block]`, `files: [list of files to change]` |
 | Each review round | `phase: IN_REVIEW`, `review: N/3` |
 | Each QA round | `phase: IN_QA`, `qa: N/3` |
@@ -51,7 +51,7 @@ Flags list → see AGENTS.md (canonical source).
 If `--auto` or no flag → evaluate the request and pick one of 3 tiers:
 
 | Tier | When | Action |
-|------|------|--------|
+| :--- | :--- | :--- |
 | **Clear** | Outcome, scope, files all known | Skip Phase 0, go to Phase 1 |
 | **Ambiguous** | Intent or scope unclear | Ask clarify (see fallback below) — max 3 adaptive questions |
 | **Complex** | Multiple modules, unknown root cause, architecture | Ask clarify (same as Ambiguous) → read `.github/context/CODEBASE.md` (if exists) + check `_codegraph:` flag → then read analyze skill (default `analyze_lite`; use `full_analyze` for large refactor) |

@@ -56,6 +56,33 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/nav_scan_qr"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                android:stateListAnimator="@animator/btn_press_scale">
+                <ImageView
+                    android:id="@+id/iv_nav_scan_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_qr_scan"
+                    app:tint="@color/text_muted" />
+                <TextView
+                    android:id="@+id/tv_nav_scan_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Quét mã"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_muted"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/nav_admin"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"

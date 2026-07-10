@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -59,6 +60,11 @@
         <activity android:name=".view.AdminManageReviewsActivity" android:exported="false" />
         <activity android:name=".view.AdminManageVouchersActivity" android:exported="false" />
         <activity android:name=".view.AdminAddVoucherActivity" android:exported="false" />
+        <activity
+            android:name=".view.CustomScannerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
 
     </application>
 

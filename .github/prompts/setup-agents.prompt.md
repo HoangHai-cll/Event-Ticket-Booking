@@ -101,7 +101,7 @@ Question 5 — header: "Source Folder" (optional)
 - [ ] `slug` has a value
 - [ ] `project_name` has a value
 - [ ] `tech_stack` has a value
-- [ ] `test_command` has a value
+- [ ] `test_command` has a valuea
 
 If not complete, ask again via `vscode_askQuestions` before continuing.
 

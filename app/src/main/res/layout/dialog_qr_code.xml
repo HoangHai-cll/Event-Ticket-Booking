@@ -24,6 +24,19 @@
         android:scaleType="fitCenter" />
 
     <TextView
+        android:id="@+id/tv_qr_locked_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mã QR và tính năng tải vé sẽ tự động kích hoạt 24 giờ trước khi sự kiện bắt đầu."
+        android:textColor="#EAB308"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone" />
+
+    <TextView
         android:id="@+id/tv_qr_booking_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

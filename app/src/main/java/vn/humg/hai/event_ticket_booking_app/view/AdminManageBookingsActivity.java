@@ -13,13 +13,23 @@ import com.google.firebase.auth.FirebaseAuth;
 import androidx.activity.result.ActivityResultLauncher;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
+import android.os.Vibrator;
+import android.os.VibrationEffect;
+import android.os.Build;
+import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 import vn.humg.hai.event_ticket_booking_app.R;
 import vn.humg.hai.event_ticket_booking_app.adapter.AdminBookingAdapter;
 import vn.humg.hai.event_ticket_booking_app.controller.BookingController;
 import vn.humg.hai.event_ticket_booking_app.controller.EventController;
+import vn.humg.hai.event_ticket_booking_app.controller.UserController;
 import vn.humg.hai.event_ticket_booking_app.model.Booking;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.google.android.material.button.MaterialButton;
 
 public class AdminManageBookingsActivity extends AppCompatActivity {
 
@@ -40,6 +50,8 @@ public class AdminManageBookingsActivity extends AppCompatActivity {
                 if (result.getContents() == null) {
                     Toast.makeText(AdminManageBookingsActivity.this, "Đã hủy quét mã QR", Toast.LENGTH_SHORT).show();
                 } else {
+                    vibrateOnScan();
+                    Toast.makeText(this, "Đã đọc mã thành công!", Toast.LENGTH_SHORT).show();
                     handleScannedBookingId(result.getContents());
                 }
             });
@@ -54,6 +66,12 @@ public class AdminManageBookingsActivity extends AppCompatActivity {
         initViews();
         setupRecyclerView();
         loadAllBookings();
+
+        // Kiểm tra nếu được mở từ Scanner bên ngoài
+        String scannedId = getIntent().getStringExtra("SCANNED_QR_ID");
+        if (scannedId != null) {
+            handleScannedBookingId(scannedId);
+        }
     }
 
     private void initViews() {
@@ -87,7 +105,8 @@ public class AdminManageBookingsActivity extends AppCompatActivity {
                 options.setCameraId(0);
                 options.setBeepEnabled(true);
                 options.setBarcodeImageEnabled(true);
-                options.setOrientationLocked(false);
+                options.setOrientationLocked(true);
+                options.setCaptureActivity(CustomScannerActivity.class);
                 barcodeLauncher.launch(options);
             });
         }
@@ -290,68 +309,115 @@ public class AdminManageBookingsActivity extends AppCompatActivity {
     }
 
     private void processCheckIn(Booking booking) {
-        String status = booking.getStatus() != null ? booking.getStatus() : "";
+        if (isFinishing() || isDestroyed()) return;
+
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_ticket_invoice, null);
         
-        // 1. Cảnh báo vé đã sử dụng / check-in trùng lặp
-        if (booking.isCheckedIn() || "Completed".equalsIgnoreCase(status)) {
-            String checkInTimeStr = "";
-            if (booking.getCheckInAt() != null) {
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm dd/MM/yyyy", java.util.Locale.getDefault());
-                checkInTimeStr = sdf.format(booking.getCheckInAt().toDate());
+        // Hide User-specific QR sections
+        dialogView.findViewById(R.id.layout_qr_container).setVisibility(View.GONE);
+        
+        // Show Admin Sections
+        dialogView.findViewById(R.id.layout_customer_info).setVisibility(View.VISIBLE);
+        MaterialButton btnCheckIn = dialogView.findViewById(R.id.btn_admin_confirm_checkin);
+        btnCheckIn.setVisibility(View.VISIBLE);
+
+        // --- Populate Data ---
+        TextView tvEventTitle = dialogView.findViewById(R.id.tv_invoice_event_title);
+        TextView tvEventTime = dialogView.findViewById(R.id.tv_invoice_event_time);
+        TextView tvInvBookingId = dialogView.findViewById(R.id.tv_invoice_booking_id);
+        TextView tvInvPriceQty = dialogView.findViewById(R.id.tv_invoice_price_qty);
+        TextView tvInvDiscount = dialogView.findViewById(R.id.tv_invoice_discount);
+        TextView tvInvTotal = dialogView.findViewById(R.id.tv_invoice_total_paid);
+        TextView tvInvPaymentInfo = dialogView.findViewById(R.id.tv_invoice_payment_info);
+        TextView tvStatus = dialogView.findViewById(R.id.tv_invoice_checkin_status);
+        
+        TextView tvCustName = dialogView.findViewById(R.id.tv_invoice_customer_name);
+        TextView tvCustContact = dialogView.findViewById(R.id.tv_invoice_customer_contact);
+
+        // 1. Fetch Event Details
+        eventController.getEventById(booking.getEventId(), event -> {
+            if (event != null) {
+                runOnUiThread(() -> {
+                    tvEventTitle.setText(event.getTitle());
+                    if (event.getDate() != null) {
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("EEEE, dd/MM/yyyy - HH:mm", java.util.Locale.getDefault());
+                        tvEventTime.setText(sdf.format(event.getDate().toDate()));
+                    }
+                });
             }
-            new AlertDialog.Builder(this)
-                .setTitle("CẢNH BÁO: VÉ ĐĂ ĐƯỢC SỬ DỤNG ⚠️")
-                .setMessage("Vé này đã được check-in trước đó!\n" +
-                            "• Thời gian: " + checkInTimeStr + "\n" +
-                            "• Người quét: " + (booking.getCheckInBy() != null ? "Admin/Staff ID: " + booking.getCheckInBy().substring(0, 8).toUpperCase() : "Hệ thống") + "\n" +
-                            "• Khách hàng: " + booking.getUserId())
-                .setPositiveButton("Đóng", null)
-                .show();
-            return;
+        }, e -> android.util.Log.e("AdminManageBookings", "Lỗi tải sự kiện: " + e));
+
+        // 2. Fetch Customer Info
+        userController.getUserById(booking.getUserId(), user -> {
+            if (user != null) {
+                runOnUiThread(() -> {
+                    tvCustName.setText("Tên: " + user.getFullName());
+                    tvCustContact.setText("Liên hệ: " + user.getEmail() + " | " + (user.getPhone() != null ? user.getPhone() : "N/A"));
+                });
+            }
+        }, e -> android.util.Log.e("AdminManageBookings", "Lỗi tải khách hàng: " + e));
+
+        // 3. Invoice Data
+        String bId = booking.getBookingId();
+        tvInvBookingId.setText("#" + (bId.length() > 12 ? bId.substring(0, 12) : bId).toUpperCase());
+        tvInvPriceQty.setText(String.format(java.util.Locale.getDefault(), "%,.0fđ x %d", booking.getPricePerTicket(), booking.getQuantity()));
+        tvInvDiscount.setText(String.format(java.util.Locale.getDefault(), "-%,.0fđ", booking.getDiscount()));
+        tvInvTotal.setText(String.format(java.util.Locale.getDefault(), "%,.0fđ", booking.getTotalPrice()));
+        tvInvPaymentInfo.setText("Thanh toán: " + (booking.getPaymentMethod() != null ? booking.getPaymentMethod() : "Ví điện tử") + 
+                                 "\nMã GD: " + (booking.getPaymentId() != null ? booking.getPaymentId() : "N/A"));
+
+        // 4. Status Handling
+        String status = booking.getStatus();
+        boolean isCheckInValid = "Confirmed".equalsIgnoreCase(status) && !booking.isCheckedIn();
+
+        if (booking.isCheckedIn()) {
+            tvStatus.setText("✅ VÉ ĐÃ SỬ DỤNG");
+            tvStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50"));
+            btnCheckIn.setEnabled(false);
+            btnCheckIn.setText("Đã Check-in");
+        } else if (!"Confirmed".equalsIgnoreCase(status)) {
+            tvStatus.setText("❌ VÉ KHÔNG HỢP LỆ (" + status + ")");
+            tvStatus.setTextColor(android.graphics.Color.parseColor("#F44336"));
+            btnCheckIn.setEnabled(false);
+            btnCheckIn.setText("Không thể Check-in");
+        } else {
+            tvStatus.setText("🎟️ CHƯA SỬ DỤNG");
+            tvStatus.setTextColor(android.graphics.Color.parseColor("#FF5C00"));
+            btnCheckIn.setEnabled(true);
         }
 
-        // 2. Cảnh báo vé bị hủy hoặc lỗi thanh toán
-        if ("Cancelled".equalsIgnoreCase(status) || "Refund Pending".equalsIgnoreCase(status) || "Pending Payment".equalsIgnoreCase(status)) {
-            new AlertDialog.Builder(this)
-                .setTitle("CẢNH BÁO: VÉ KHÔNG HỢP LỆ ❌")
-                .setMessage("Vé này không đủ điều kiện check-in!\n" +
-                            "• Trạng thái vé: " + status + "\n" +
-                            "• Khách hàng: " + booking.getUserId())
-                .setPositiveButton("Đóng", null)
-                .show();
-            return;
-        }
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
 
-        // 3. Tiến hành check-in vé hợp lệ
-        if ("Confirmed".equalsIgnoreCase(status)) {
-            eventController.getEventById(booking.getEventId(), event -> {
-                String eventName = event != null ? event.getTitle() : "Sự kiện";
-                
-                runOnUiThread(() -> {
-                    new AlertDialog.Builder(this)
-                        .setTitle("Xác nhận Check-in vé 🎟️")
-                        .setMessage("Thông tin khách hàng:\n" +
-                                    "• Sự kiện: " + eventName + "\n" +
-                                    "• Hạng vé: " + (booking.getTierName() != null ? booking.getTierName() : "Standard") + "\n" +
-                                    "• Số lượng: " + booking.getQuantity() + " vé\n" +
-                                    "• Tổng chi tiêu: " + String.format(java.util.Locale.getDefault(), "%,.0fđ", booking.getTotalPrice()))
-                        .setPositiveButton("Xác nhận Check-in", (dialog, which) -> {
-                            booking.setCheckedIn(true);
-                            booking.setCheckInAt(Timestamp.now());
-                            booking.setCheckInBy(currentAdminId);
-                            updateStatus(booking, "Completed", "Check-in thành công");
-                        })
-                        .setNegativeButton("Hủy bỏ", null)
-                        .show();
-                });
-            }, err -> {
-                runOnUiThread(() -> {
-                    booking.setCheckedIn(true);
-                    booking.setCheckInAt(Timestamp.now());
-                    booking.setCheckInBy(currentAdminId);
-                    updateStatus(booking, "Completed", "Check-in thành công");
-                });
-            });
+        btnCheckIn.setOnClickListener(v -> {
+            booking.setCheckedIn(true);
+            booking.setCheckInAt(Timestamp.now());
+            booking.setCheckInBy(currentAdminId);
+            updateStatus(booking, "Completed", "Check-in thành công");
+            dialog.dismiss();
+        });
+
+        dialogView.findViewById(R.id.btn_qr_close).setOnClickListener(v -> dialog.dismiss());
+        View btnCloseBottom = dialogView.findViewById(R.id.btn_invoice_close_bottom);
+        if (btnCloseBottom != null) {
+            btnCloseBottom.setOnClickListener(v -> dialog.dismiss());
+        }
+        
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        dialog.show();
+    }
+
+    private void vibrateOnScan() {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator != null && vibrator.hasVibrator()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(150, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(150);
+            }
         }
     }
 }

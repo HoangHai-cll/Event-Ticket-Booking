@@ -1,36 +1,5 @@
 # STATE
-_updated: 2026-06-21_
+_updated: 2026-07-05_
 
 ## Active
 <!-- max 3 tasks. Agent overwrites this entire file each update. -->
-
-### task-20260602-1
-task: "Preserve fluid when changing grid size / dye resolution"
-type: fix
-phase: THINK_DONE
-plan: "Scale-blit dye content in C++ resize(); use nativeResize instead of destroy+init"
-files: "FluidSolver.cpp, FluidRenderer.kt"
-review: 0/3
-qa: 0/3
-note: "none"
-
-### task-20260605-1
-task: "Soạn giáo án Kotlin OOP 1 buổi cho người mới"
-type: docs
-phase: THINK_DONE
-plan: "Biên soạn giáo án 180 phút gồm lý thuyết, demo, bài tập, đáp án, rubric"
-approach: "Tập trung 4 trụ cột OOP, dạy theo nhịp Learn -> Code -> Review, có bài tập tăng dần và đáp án chuẩn"
-files: "oop.md"
-review: 0/3
-qa: 0/3
-note: "none"
-
-### task-20260626-1
-task: "Reorganize Java packages to MVC and add AuthResultAdapter"
-type: fix
-phase: THINK_DONE
-plan: "Move Activities to view package, add model and controller packages, create AuthResultAdapter to standardize auth result intents"
-files: "app/src/main/java/vn/humg/hai/event_ticket_booking_app/view/*, app/src/main/java/vn/humg/hai/event_ticket_booking_app/adapter/AuthResultAdapter.java, app/src/main/java/vn/humg/hai/event_ticket_booking_app/controller/AuthController.java, app/src/main/java/vn/humg/hai/event_ticket_booking_app/model/User.java"
-review: 0/3
-qa: 0/3
-note: "Performed code move + added adapter/controller. Build compiled successfully."

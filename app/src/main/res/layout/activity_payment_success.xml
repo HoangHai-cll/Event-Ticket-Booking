@@ -187,6 +187,18 @@
                         </com.google.android.material.card.MaterialCardView>
 
                         <TextView
+                            android:id="@+id/tv_success_qr_notice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:textColor="#EAB308"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:text="Mã QR sẽ tự động kích hoạt 24 giờ trước khi sự kiện bắt đầu."
+                            android:visibility="gone" />
+
+                        <TextView
                             android:id="@+id/tv_success_booking_id"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

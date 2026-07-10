@@ -33,7 +33,8 @@ public class AdminTopUserAdapter extends RecyclerView.Adapter<AdminTopUserAdapte
         holder.tvRank.setText(String.valueOf(position + 1));
         
         String name = userNames.get(entry.getKey());
-        holder.tvName.setText(name != null ? name : "User #" + entry.getKey().substring(0, 5));
+        String userId = entry.getKey();
+        holder.tvName.setText(name != null ? name : "User #" + (userId.length() > 5 ? userId.substring(0, 5) : userId));
         
         holder.tvTotalSpent.setText(String.format(Locale.getDefault(), "%,.0fđ", entry.getValue()));
     }

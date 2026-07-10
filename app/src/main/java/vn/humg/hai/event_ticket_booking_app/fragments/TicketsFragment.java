@@ -14,6 +14,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
+import vn.humg.hai.event_ticket_booking_app.controller.ConfigController;
+import vn.humg.hai.event_ticket_booking_app.controller.UserController;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 import androidx.appcompat.app.AlertDialog;
@@ -35,6 +37,7 @@ public class TicketsFragment extends Fragment {
 
     private final BookingController bookingController = new BookingController();
     private final EventController eventController = new EventController();
+    private final UserController userController = new UserController();
     private final List<Booking> fullBookingList = new ArrayList<>();
     private final List<Booking> displayList = new ArrayList<>();
     private final Map<String, Event> eventCache = new HashMap<>();
@@ -202,26 +205,120 @@ public class TicketsFragment extends Fragment {
     }
 
     private void showQRCodeDialog(Booking booking) {
-        if (!"Confirmed".equals(booking.getStatus())) {
-            Toast.makeText(getContext(), "Vé này chưa được thanh toán hoặc đã bị hủy/sử dụng", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (getContext() == null) return;
 
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_qr_code, null);
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_ticket_invoice, null);
+        
+        // --- Mapping Views ---
         ImageView ivQr = dialogView.findViewById(R.id.iv_qr_code);
         TextView tvId = dialogView.findViewById(R.id.tv_qr_booking_id);
+        TextView tvLockedMsg = dialogView.findViewById(R.id.tv_qr_locked_message);
+        View btnSave = dialogView.findViewById(R.id.btn_save_qr);
+        View btnCancel = dialogView.findViewById(R.id.btn_cancel_ticket);
         
-        tvId.setText("ID: #" + booking.getBookingId().substring(0, 8).toUpperCase());
+        TextView tvEventTitle = dialogView.findViewById(R.id.tv_invoice_event_title);
+        TextView tvEventTime = dialogView.findViewById(R.id.tv_invoice_event_time);
+        
+        TextView tvInvBookingId = dialogView.findViewById(R.id.tv_invoice_booking_id);
+        TextView tvInvPriceQty = dialogView.findViewById(R.id.tv_invoice_price_qty);
+        TextView tvInvDiscount = dialogView.findViewById(R.id.tv_invoice_discount);
+        TextView tvInvTotal = dialogView.findViewById(R.id.tv_invoice_total_paid);
+        TextView tvInvPaymentInfo = dialogView.findViewById(R.id.tv_invoice_payment_info);
+        TextView tvStatus = dialogView.findViewById(R.id.tv_invoice_checkin_status);
+
+        // Hide Admin Sections
+        dialogView.findViewById(R.id.layout_customer_info).setVisibility(View.GONE);
+        dialogView.findViewById(R.id.btn_admin_confirm_checkin).setVisibility(View.GONE);
+
+        // --- Populate Invoice Data ---
+        Event event = eventCache.get(booking.getEventId());
+        if (event != null) {
+            tvEventTitle.setText(event.getTitle());
+            if (event.getDate() != null) {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("EEEE, dd/MM/yyyy - HH:mm", java.util.Locale.getDefault());
+                tvEventTime.setText(sdf.format(event.getDate().toDate()));
+            }
+        }
+
+        String bId = booking.getBookingId();
+        tvInvBookingId.setText("#" + (bId.length() > 12 ? bId.substring(0, 12) : bId).toUpperCase());
+        double unitPrice = booking.getPricePerTicket();
+        tvInvPriceQty.setText(String.format(java.util.Locale.getDefault(), "%,.0fđ x %d", unitPrice, booking.getQuantity()));
+        tvInvDiscount.setText(String.format(java.util.Locale.getDefault(), "-%,.0fđ", booking.getDiscount()));
+        tvInvTotal.setText(String.format(java.util.Locale.getDefault(), "%,.0fđ", booking.getTotalPrice()));
+        tvInvPaymentInfo.setText("Thanh toán qua: " + (booking.getPaymentMethod() != null ? booking.getPaymentMethod() : "Ví điện tử") + 
+                                 "\nMã GD: " + (booking.getPaymentId() != null ? booking.getPaymentId() : "N/A"));
+
+        // Status Badge
+        String statusText = "Trạng thái: " + booking.getStatus();
+        if (booking.isCheckedIn()) {
+            statusText = "✅ ĐÃ SỬ DỤNG (CHECKED-IN)";
+            tvStatus.setBackgroundResource(R.drawable.bg_chip_light);
+            tvStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50"));
+        } else if ("Confirmed".equals(booking.getStatus())) {
+            statusText = "🎟️ CHƯA SỬ DỤNG";
+            tvStatus.setBackgroundResource(R.drawable.bg_chip_light);
+            tvStatus.setTextColor(android.graphics.Color.parseColor("#FF5C00"));
+        } else {
+            tvStatus.setTextColor(android.graphics.Color.parseColor("#F44336"));
+        }
+        tvStatus.setText(statusText);
+
+        // --- QR Logic ---
+        tvId.setText("Mã vé: #" + (bId.length() > 8 ? bId.substring(0, 8) : bId).toUpperCase());
+        long thresholdMs = ConfigController.getInstance().getQrReleaseThresholdMs();
+        boolean isQRActive = true;
+        if (event != null && event.getDate() != null) {
+            long eventTimeMs = event.getDate().toDate().getTime();
+            long currentTimeMs = System.currentTimeMillis();
+            isQRActive = (eventTimeMs - currentTimeMs <= thresholdMs);
+        }
+
+        // QR active only if Confirmed and not Checked-in
+        boolean canShowQR = isQRActive && "Confirmed".equals(booking.getStatus()) && !booking.isCheckedIn();
 
         final Bitmap[] qrBitmap = {null};
-        try {
-            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-            Bitmap bitmap = barcodeEncoder.encodeBitmap(booking.getBookingId(), BarcodeFormat.QR_CODE, 600, 600);
-            ivQr.setImageBitmap(bitmap);
-            qrBitmap[0] = bitmap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Lỗi tạo QR Code", Toast.LENGTH_SHORT).show();
+        if (canShowQR) {
+            ivQr.setVisibility(View.VISIBLE);
+            if (tvLockedMsg != null) tvLockedMsg.setVisibility(View.GONE);
+            if (btnSave != null) btnSave.setVisibility(View.VISIBLE);
+            if (btnCancel != null) btnCancel.setVisibility(View.GONE);
+
+            try {
+                BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+                Bitmap bitmap = barcodeEncoder.encodeBitmap(booking.getBookingId(), BarcodeFormat.QR_CODE, 600, 600);
+                ivQr.setImageBitmap(bitmap);
+                qrBitmap[0] = bitmap;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            ivQr.setVisibility(View.GONE);
+            if (btnSave != null) btnSave.setVisibility(View.GONE);
+            
+            if (booking.isCheckedIn()) {
+                if (tvLockedMsg != null) {
+                    tvLockedMsg.setVisibility(View.VISIBLE);
+                    tvLockedMsg.setText("Vé đã được sử dụng để vào cổng.");
+                }
+                if (btnCancel != null) btnCancel.setVisibility(View.GONE);
+            } else if (!isQRActive && "Confirmed".equals(booking.getStatus())) {
+                if (tvLockedMsg != null) {
+                    tvLockedMsg.setVisibility(View.VISIBLE);
+                    if (event != null && event.getDate() != null) {
+                        long releaseTimeMs = event.getDate().toDate().getTime() - thresholdMs;
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault());
+                        tvLockedMsg.setText("Mã QR sẽ tự động kích hoạt vào:\n" + sdf.format(new java.util.Date(releaseTimeMs)));
+                    }
+                }
+                if (btnCancel != null) btnCancel.setVisibility(View.VISIBLE);
+            } else {
+                if (tvLockedMsg != null) {
+                    tvLockedMsg.setVisibility(View.VISIBLE);
+                    tvLockedMsg.setText("Vé không khả dụng (Đã hủy hoặc chờ thanh toán)");
+                }
+                if (btnCancel != null) btnCancel.setVisibility(View.GONE);
+            }
         }
 
         AlertDialog dialog = new AlertDialog.Builder(getContext())
@@ -229,21 +326,23 @@ public class TicketsFragment extends Fragment {
                 .create();
 
         dialogView.findViewById(R.id.btn_qr_close).setOnClickListener(v -> dialog.dismiss());
-        dialogView.findViewById(R.id.btn_cancel_ticket).setOnClickListener(v -> handleCancelTicket(booking, dialog));
+        View btnCloseBottom = dialogView.findViewById(R.id.btn_invoice_close_bottom);
+        if (btnCloseBottom != null) {
+            btnCloseBottom.setOnClickListener(v -> dialog.dismiss());
+        }
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> handleCancelTicket(booking, dialog));
+        }
 
-        dialogView.findViewById(R.id.btn_save_qr).setOnClickListener(v -> {
-            if (qrBitmap[0] != null) {
-                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q &&
-                        androidx.core.content.ContextCompat.checkSelfPermission(requireContext(), 
-                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
-                } else {
-                    saveBitmapToGallery(qrBitmap[0], "Booking_" + booking.getBookingId().substring(0, 8));
+        if (btnSave != null) {
+            btnSave.setOnClickListener(v -> {
+                if (qrBitmap[0] != null) {
+                    String bIdShort = booking.getBookingId();
+                    if (bIdShort.length() > 8) bIdShort = bIdShort.substring(0, 8);
+                    saveBitmapToGallery(qrBitmap[0], "Booking_" + bIdShort);
                 }
-            } else {
-                Toast.makeText(getContext(), "Không tìm thấy ảnh QR để tải!", Toast.LENGTH_SHORT).show();
-            }
-        });
+            });
+        }
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);

@@ -8,6 +8,7 @@
     android:background="@drawable/bg_radial_festive_light">
 
     <LinearLayout
+        android:id="@+id/layout_register_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -51,6 +52,7 @@
 
         <!-- Ô Nhập: Họ và tên -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_reg_fullname"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -73,6 +75,7 @@
 
         <!-- Ô Nhập: Email -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_reg_email"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -96,6 +99,7 @@
 
         <!-- Ô Nhập: Số điện thoại -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_reg_phone"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -118,6 +122,7 @@
 
         <!-- Ô Nhập: Mật khẩu -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_reg_password"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -141,6 +146,7 @@
 
         <!-- Ô Nhập: Xác nhận mật khẩu -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_reg_confirm_password"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -164,6 +170,7 @@
 
         <!-- Ô Nhập: Mã admin (tùy chọn) -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_reg_admin_code"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

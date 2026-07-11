@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.material.button.MaterialButton;
 import vn.humg.hai.event_ticket_booking_app.controller.ConfigController;
 import com.google.zxing.BarcodeFormat;
@@ -20,6 +21,7 @@ public class PaymentSuccessActivity extends AppCompatActivity {
     private TextView tvEventTitle, tvDate, tvTime, tvQuantity, tvBookingId, tvCategory, tvQrNotice;
     private ImageView ivQr;
     private MaterialButton btnViewTickets, btnGoHome;
+    private LottieAnimationView lavSuccessCheck;
     private final EventController eventController = new EventController();
 
     @Override
@@ -43,6 +45,14 @@ public class PaymentSuccessActivity extends AppCompatActivity {
         ivQr = findViewById(R.id.iv_success_qr);
         btnViewTickets = findViewById(R.id.btn_view_tickets);
         btnGoHome = findViewById(R.id.btn_go_home);
+        lavSuccessCheck = findViewById(R.id.lav_success_check);
+
+        if (lavSuccessCheck != null) {
+            lavSuccessCheck.setFailureListener(result -> {
+                // If loading from Lottie URL fails (e.g. offline mode), fallback to static checkmark image
+                lavSuccessCheck.setImageResource(R.drawable.ic_success_check);
+            });
+        }
     }
 
     private void loadTicketData() {

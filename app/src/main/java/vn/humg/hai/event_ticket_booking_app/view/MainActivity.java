@@ -20,6 +20,8 @@ import com.google.android.material.navigation.NavigationView;
 import android.widget.ImageButton;
 import com.bumptech.glide.Glide;
 import vn.humg.hai.event_ticket_booking_app.controller.ConfigController;
+import vn.humg.hai.event_ticket_booking_app.model.User;
+import android.util.Log;
 
 import vn.humg.hai.event_ticket_booking_app.R;
 import androidx.lifecycle.ViewModelProvider;
@@ -125,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
             if (user != null) {
                 isUserAdmin = "admin".equalsIgnoreCase(user.getRole());
                 setupUIForRole(isUserAdmin, savedInstanceState);
+                syncFcmToken(user);
                 
                 if (navViewDrawer != null) {
                     View headerView = navViewDrawer.getHeaderView(0);
@@ -263,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
             if (id == R.id.nav_home_drawer) {
                 navigateToTab("Home");
             } else if (id == R.id.nav_notifications_drawer) {
-                showNotificationsDialog();
+                startActivity(new Intent(this, NotificationActivity.class));
             } else if (id == R.id.nav_favorites_drawer) {
                 navigateToTab("Home");
                 if (homeFragment instanceof HomeFragment) {
@@ -427,5 +430,28 @@ public class MainActivity extends AppCompatActivity {
                 vibrator.vibrate(150);
             }
         }
+    }
+
+    private void syncFcmToken(User user) {
+        if (user == null || user.getUid() == null) return;
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
+            .addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    Log.w("MainActivity", "Fetching FCM registration token failed", task.getException());
+                    return;
+                }
+                String token = task.getResult();
+                if (token != null && !token.equals(user.getFcmToken())) {
+                    // Update locally
+                    user.setFcmToken(token);
+                    // Update in Firestore
+                    com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                        .collection("users")
+                        .document(user.getUid())
+                        .update("fcmToken", token)
+                        .addOnSuccessListener(aVoid -> Log.d("MainActivity", "FCM Token successfully synced to Firestore"))
+                        .addOnFailureListener(e -> Log.e("MainActivity", "Failed to sync FCM Token to Firestore", e));
+                }
+            });
     }
 }

@@ -26,6 +26,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_logo"
             android:layout_width="140dp"
             android:layout_height="140dp"
             android:layout_marginBottom="24dp"
@@ -43,6 +44,7 @@
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
+            android:id="@+id/tv_splash_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="EventPass"
@@ -51,6 +53,7 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/tv_splash_subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -59,6 +62,7 @@
             android:textSize="14sp" />
 
         <ProgressBar
+            android:id="@+id/pb_splash_loading"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginTop="48dp"

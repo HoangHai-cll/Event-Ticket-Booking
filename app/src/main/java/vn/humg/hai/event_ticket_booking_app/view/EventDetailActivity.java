@@ -23,6 +23,7 @@ import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 import vn.humg.hai.event_ticket_booking_app.viewmodel.EventViewModel;
 import vn.humg.hai.event_ticket_booking_app.model.Event;
 import vn.humg.hai.event_ticket_booking_app.model.Review;
+import androidx.annotation.Nullable;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import androidx.appcompat.app.AlertDialog;
@@ -52,6 +53,9 @@ public class EventDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
+
+        // Postpone transition until the header image is loaded from network
+        supportPostponeEnterTransition();
 
         eventId = getIntent().getStringExtra("EXTRA_EVENT_ID");
         eventViewModel = new ViewModelProvider(this).get(EventViewModel.class);
@@ -106,6 +110,13 @@ public class EventDetailActivity extends AppCompatActivity {
         findViewById(R.id.btn_back_custom).setOnClickListener(v -> finish());
 
         ivDetailImage = findViewById(R.id.iv_detail_image);
+
+        // Retrieve and set shared element transition name dynamically
+        String transitionName = getIntent().getStringExtra("EXTRA_TRANSITION_NAME");
+        if (transitionName != null && ivDetailImage != null) {
+            androidx.core.view.ViewCompat.setTransitionName(ivDetailImage, transitionName);
+        }
+
         tvTitle = findViewById(R.id.tv_detail_title);
         tvDate = findViewById(R.id.tv_detail_date);
         tvTime = findViewById(R.id.tv_detail_time);
@@ -201,6 +212,19 @@ public class EventDetailActivity extends AppCompatActivity {
         Glide.with(this)
                 .load(event.getImage())
                 .placeholder(R.drawable.img_logo_event_ticket_booking)
+                .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable com.bumptech.glide.load.engine.GlideException e, Object model, com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target, boolean isFirstResource) {
+                        supportStartPostponedEnterTransition();
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(android.graphics.drawable.Drawable resource, Object model, com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target, com.bumptech.glide.load.DataSource dataSource, boolean isFirstResource) {
+                        supportStartPostponedEnterTransition();
+                        return false;
+                    }
+                })
                 .into(ivDetailImage);
 
         btnOpenMap.setVisibility(View.VISIBLE);

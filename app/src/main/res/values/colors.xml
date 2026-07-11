@@ -1,6 +1,10 @@
 <resources>
     <color name="brand_primary">#FF5C00</color>
     <color name="brand_primary_dark">#E04F00</color>
+    <color name="brand_light_be">#FFF8E7</color>
+    <color name="brand_bg_gradient_start">#FFFDF0</color>
+    <color name="brand_bg_gradient_center">#FFF8E7</color>
+    <color name="brand_bg_gradient_end">#F5E6D3</color>
     <color name="brand_light_purple">#FFF2EB</color>
 
     <!-- Checkout Flow Colors -->

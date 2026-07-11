@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,16 +19,22 @@ import vn.humg.hai.event_ticket_booking_app.R;
 import vn.humg.hai.event_ticket_booking_app.model.Event;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
+    
+    public static final int VIEW_TYPE_HOT = 1;
+    public static final int VIEW_TYPE_STANDARD = 2;
+    public static final int VIEW_TYPE_COMPACT = 3;
+
     private final List<Event> events;
     private final OnEventClickListener listener;
     private final OnFavoriteClickListener favoriteClickListener;
     private final Set<String> favoriteEventIds = new HashSet<>(); 
-    private boolean isHorizontal = false;
+    private final boolean isHotSection;
+    private boolean useCompactLayout = false;
     
     private OnFavoriteChangeListener favoriteListener;
 
     public interface OnEventClickListener {
-        void onEventClick(Event event);
+        void onEventClick(Event event, ImageView imageView);
     }
 
     public interface OnFavoriteChangeListener {
@@ -41,16 +46,19 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     public EventAdapter(List<Event> events, OnEventClickListener listener, OnFavoriteClickListener favoriteClickListener) {
+        this(events, false, listener, favoriteClickListener);
+    }
+
+    public EventAdapter(List<Event> events, boolean isHotSection, OnEventClickListener listener, OnFavoriteClickListener favoriteClickListener) {
         this.events = events;
+        this.isHotSection = isHotSection;
         this.listener = listener;
         this.favoriteClickListener = favoriteClickListener;
     }
 
-    public EventAdapter(List<Event> events, boolean isHorizontal, OnEventClickListener listener, OnFavoriteClickListener favoriteClickListener) {
-        this.events = events;
-        this.isHorizontal = isHorizontal;
-        this.listener = listener;
-        this.favoriteClickListener = favoriteClickListener;
+    public void setUseCompactLayout(boolean useCompact) {
+        this.useCompactLayout = useCompact;
+        notifyDataSetChanged();
     }
 
     public void setOnFavoriteChangeListener(OnFavoriteChangeListener listener) {
@@ -63,99 +71,90 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         notifyDataSetChanged();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        if (isHotSection) return VIEW_TYPE_HOT;
+        return useCompactLayout ? VIEW_TYPE_COMPACT : VIEW_TYPE_STANDARD;
+    }
+
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_event, parent, false);
-        if (isHorizontal) {
+        int layoutId;
+        if (viewType == VIEW_TYPE_HOT) {
+            layoutId = R.layout.item_event_hot;
+        } else if (viewType == VIEW_TYPE_COMPACT) {
+            layoutId = R.layout.item_event_compact;
+        } else {
+            layoutId = R.layout.item_event;
+        }
+
+        View view = LayoutInflater.from(parent.getContext()).inflate(layoutId, parent, false);
+        
+        if (viewType == VIEW_TYPE_HOT) {
             ViewGroup.LayoutParams params = view.getLayoutParams();
-            params.width = (int) (parent.getResources().getDisplayMetrics().widthPixels * 0.85);
+            params.width = (int) (parent.getResources().getDisplayMetrics().widthPixels * 0.7);
             view.setLayoutParams(params);
         }
-        return new EventViewHolder(view);
+        
+        return new EventViewHolder(view, viewType);
     }
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
-        holder.title.setText(event.getTitle());
-        holder.location.setText(event.getLocation());
-        holder.time.setText(String.format("⏰ %s", formatEventTime(event)));
-        holder.dateTag.setText(formatDateTag(event));
-        holder.price.setText(String.format(Locale.getDefault(), "%,.0fđ", event.getPrice()));
         
-        // Đổ dữ liệu Đánh giá (Rating)
-        holder.rbRating.setRating(event.getAverageRating());
-        holder.tvReviewCount.setText(String.format(Locale.getDefault(), "(%d đánh giá)", event.getReviewCount()));
+        if (holder.title != null) holder.title.setText(event.getTitle());
+        if (holder.location != null) holder.location.setText(event.getLocation());
+        if (holder.time != null) holder.time.setText(String.format("⏰ %s", formatEventTime(event)));
+        if (holder.dateTag != null) holder.dateTag.setText(formatDateTag(event));
+        if (holder.price != null) holder.price.setText(String.format(Locale.getDefault(), "%,.0fđ", event.getPrice()));
+        
+        if (holder.rbRating != null) holder.rbRating.setRating(event.getAverageRating());
+        if (holder.tvReviewCount != null) holder.tvReviewCount.setText(String.format(Locale.getDefault(), "(%d đánh giá)", event.getReviewCount()));
 
-        Glide.with(holder.itemView.getContext())
-                .load(event.getImage())
-                .placeholder(R.drawable.img_logo_event_ticket_booking)
-                .centerCrop()
-                .into(holder.image);
-
-        boolean isExpired = false;
-        if (event.getDate() != null) {
-            isExpired = event.getDate().getSeconds() < (System.currentTimeMillis() / 1000);
+        if (holder.image != null) {
+            Glide.with(holder.itemView.getContext())
+                    .load(event.getImage())
+                    .placeholder(R.drawable.img_logo_event_ticket_booking)
+                    .centerCrop()
+                    .into(holder.image);
+            androidx.core.view.ViewCompat.setTransitionName(holder.image, "event_image_" + event.getEventId() + "_" + holder.viewType);
         }
 
-        if (isExpired) {
-            holder.flImageContainer.setVisibility(View.GONE);
-            holder.llRatingContainer.setVisibility(View.GONE);
-            holder.llActionContainer.setVisibility(View.GONE);
-            holder.time.setVisibility(View.GONE);
-            holder.location.setVisibility(View.GONE);
-            
-            holder.title.setText(event.getTitle() + " (Đã qua thời gian tổ chức)");
-            holder.title.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.text_muted));
-            holder.title.setTextSize(14f);
-            holder.title.setTypeface(null, android.graphics.Typeface.NORMAL);
-            
-            holder.itemView.setAlpha(0.6f);
-        } else {
-            holder.flImageContainer.setVisibility(View.VISIBLE);
-            holder.llRatingContainer.setVisibility(View.VISIBLE);
-            holder.llActionContainer.setVisibility(View.VISIBLE);
-            holder.time.setVisibility(View.VISIBLE);
-            holder.location.setVisibility(View.VISIBLE);
-            
-            holder.title.setText(event.getTitle());
-            holder.title.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.ink_dark));
-            holder.title.setTextSize(18f);
-            holder.title.setTypeface(null, android.graphics.Typeface.BOLD);
-            
-            holder.itemView.setAlpha(1.0f);
-        }
-
-        boolean isFav = favoriteEventIds.contains(event.getEventId());
-        if (isFav) {
-            holder.tvFavorite.setImageResource(R.drawable.ic_heart_filled);
-            holder.tvFavorite.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.color_favorite));
-        } else {
-            holder.tvFavorite.setImageResource(R.drawable.ic_heart);
-            holder.tvFavorite.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.color_favorite_inactive));
-        }
-
-        holder.tvFavorite.setOnClickListener(v -> {
-            if (favoriteClickListener != null) {
-                favoriteClickListener.onFavoriteClick(event);
+        if (holder.tvFavorite != null) {
+            boolean isFav = favoriteEventIds.contains(event.getEventId());
+            if (isFav) {
+                holder.tvFavorite.setImageResource(R.drawable.ic_heart_filled);
+                holder.tvFavorite.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.brand_primary));
+            } else {
+                holder.tvFavorite.setImageResource(R.drawable.ic_heart);
+                holder.tvFavorite.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_muted));
             }
-        });
-        holder.itemView.setOnClickListener(v -> listener.onEventClick(event));
-        holder.bookButton.setOnClickListener(v -> listener.onEventClick(event));
+            holder.tvFavorite.setOnClickListener(v -> {
+                if (favoriteClickListener != null) favoriteClickListener.onFavoriteClick(event);
+            });
+        }
+
+        holder.itemView.setOnClickListener(v -> listener.onEventClick(event, holder.image));
+        if (holder.bookButton != null) {
+            holder.bookButton.setOnClickListener(v -> listener.onEventClick(event, holder.image));
+        }
     }
 
     @Override
     public int getItemCount() { return events.size(); }
 
     public static class EventViewHolder extends RecyclerView.ViewHolder {
-        final ImageView image, tvFavorite;
-        final TextView title, location, time, price, dateTag, bookButton, tvReviewCount;
-        final RatingBar rbRating;
-        final View flImageContainer, llRatingContainer, llActionContainer;
+        final int viewType;
+        ImageView image, tvFavorite;
+        TextView title, location, time, price, dateTag, bookButton, tvReviewCount;
+        RatingBar rbRating;
+        View flImageContainer, llRatingContainer, llActionContainer;
 
-        EventViewHolder(@NonNull View itemView) {
+        EventViewHolder(@NonNull View itemView, int viewType) {
             super(itemView);
+            this.viewType = viewType;
             image = itemView.findViewById(R.id.iv_item_image);
             title = itemView.findViewById(R.id.tv_item_title);
             location = itemView.findViewById(R.id.tv_item_location);

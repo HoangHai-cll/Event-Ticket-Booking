@@ -19,6 +19,7 @@ public class User {
 
     private long exp = 0;
     private String memberTier = "Thường";
+    private String fcmToken;
 
     public User() {
         this.role = "user"; // Mặc định là user
@@ -26,6 +27,9 @@ public class User {
         this.exp = 0;
         this.memberTier = "Thường";
     }
+
+    public String getFcmToken() { return fcmToken; }
+    public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
 
     public long getExp() { return exp; }
     public void setExp(long exp) { this.exp = exp; }

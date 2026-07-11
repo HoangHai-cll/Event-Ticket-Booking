@@ -129,9 +129,11 @@ public class PaymentActivity extends AppCompatActivity {
                 // logic handled by dialog
             } else if (result.status == BookingViewModel.BookingStatus.SUCCESS) {
                 if (loadingDialog != null) loadingDialog.dismiss();
+                addLocalBookingNotification();
                 navigateToSuccess(result.bookingId);
             } else if (result.status == BookingViewModel.BookingStatus.LEVEL_UP) {
                 if (loadingDialog != null) loadingDialog.dismiss();
+                addLocalBookingNotification();
                 showLevelUpDialog(result.newTier, result.bookingId);
             } else if (result.status == BookingViewModel.BookingStatus.ERROR) {
                 if (loadingDialog != null) loadingDialog.dismiss();
@@ -490,5 +492,19 @@ public class PaymentActivity extends AppCompatActivity {
 
     private String formatPrice(double price) {
         return String.format(Locale.getDefault(), "%,.0fđ", price);
+    }
+
+    private void addLocalBookingNotification() {
+        String eventTitle = currentEvent != null ? currentEvent.getTitle() : "Sự kiện";
+        String title = "Đặt vé thành công! 🎟️";
+        String body = "Bạn đã đặt thành công " + quantity + " vé cho sự kiện \"" + eventTitle + "\".";
+        
+        // 1. Lưu SQLite
+        vn.humg.hai.event_ticket_booking_app.utils.LocalNotificationDbHelper.getInstance(this)
+            .insertNotification(title, body, "TICKET");
+            
+        // 2. Gửi Broadcast để cập nhật Badge
+        Intent intent = new Intent("vn.humg.hai.event_ticket_booking_app.UPDATE_UNREAD_COUNT");
+        sendBroadcast(intent);
     }
 }

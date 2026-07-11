@@ -49,10 +49,14 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-config")
+    implementation("com.google.firebase:firebase-messaging")
 
     // Glide for image loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    // Lottie animations
+    implementation("com.airbnb.android:lottie:6.1.0")
 
     // ZXing for QR Code Generation
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")

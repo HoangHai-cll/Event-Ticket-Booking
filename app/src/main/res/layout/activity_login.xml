@@ -8,6 +8,7 @@
     android:background="@drawable/bg_radial_festive_light">
 
     <LinearLayout
+        android:id="@+id/layout_login_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -52,6 +53,7 @@
 
         <!-- Ô Nhập: Email -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_login_email"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -74,6 +76,7 @@
 
         <!-- Ô Nhập: Mật khẩu -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_login_password"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

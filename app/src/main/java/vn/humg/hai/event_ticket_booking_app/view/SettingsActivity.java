@@ -56,6 +56,11 @@ public class SettingsActivity extends AppCompatActivity {
     private void setupEvents() {
         switchAppNotification.setOnCheckedChangeListener((buttonView, isChecked) -> {
             sharedPreferences.edit().putBoolean(KEY_APP_NOTIF, isChecked).apply();
+            if (isChecked) {
+                com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("all");
+            } else {
+                com.google.firebase.messaging.FirebaseMessaging.getInstance().unsubscribeFromTopic("all");
+            }
             Toast.makeText(this, isChecked ? "Đã bật thông báo ứng dụng" : "Đã tắt thông báo ứng dụng", Toast.LENGTH_SHORT).show();
         });
 

@@ -48,6 +48,12 @@ public class ProfileFragment extends Fragment {
     private final List<Voucher> myVouchers = new ArrayList<>();
     private MaterialButton btnLogout;
 
+    // New profile menu views
+    private LinearLayout menuMyTickets, menuNotifications, menuTransactionHistory, menuMyReviews;
+    private View viewNotificationDot;
+    private View cardLogout;
+    private View viewAdminDivider;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -75,10 +81,15 @@ public class ProfileFragment extends Fragment {
         menuSupport = view.findViewById(R.id.menu_support);
         menuTerms = view.findViewById(R.id.menu_terms);
         menuAdmin = view.findViewById(R.id.menu_admin);
-        menuMyVouchers = view.findViewById(R.id.menu_my_vouchers);
-        tvVoucherCount = view.findViewById(R.id.tv_voucher_count);
         
-        btnLogout = view.findViewById(R.id.btn_logout);
+        // New views
+        menuMyTickets = view.findViewById(R.id.menu_my_tickets);
+        menuNotifications = view.findViewById(R.id.menu_notifications);
+        menuTransactionHistory = view.findViewById(R.id.menu_transaction_history);
+        menuMyReviews = view.findViewById(R.id.menu_my_reviews);
+        viewNotificationDot = view.findViewById(R.id.view_notification_dot);
+        cardLogout = view.findViewById(R.id.card_logout);
+        viewAdminDivider = view.findViewById(R.id.view_admin_divider);
     }
 
     private void initEvents() {
@@ -88,8 +99,32 @@ public class ProfileFragment extends Fragment {
         menuSupport.setOnClickListener(v -> startActivity(new Intent(getContext(), HelpCenterActivity.class)));
         menuTerms.setOnClickListener(v -> startActivity(new Intent(getContext(), TermsPolicyActivity.class)));
         
-        if (menuMyVouchers != null) {
-            menuMyVouchers.setOnClickListener(v -> showMyVouchersDialog());
+        if (menuMyTickets != null) {
+            menuMyTickets.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).navigateToTab("Tickets");
+                }
+            });
+        }
+        
+        if (menuNotifications != null) {
+            menuNotifications.setOnClickListener(v -> {
+                startActivity(new Intent(getContext(), vn.humg.hai.event_ticket_booking_app.view.NotificationActivity.class));
+            });
+        }
+        
+        if (menuTransactionHistory != null) {
+            menuTransactionHistory.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).navigateToTab("History");
+                }
+            });
+        }
+        
+        if (menuMyReviews != null) {
+            menuMyReviews.setOnClickListener(v -> {
+                Toast.makeText(getContext(), "Tính năng Đánh giá của tôi đang được phát triển", Toast.LENGTH_SHORT).show();
+            });
         }
         
         if (tvMemberTier != null) {
@@ -105,14 +140,59 @@ public class ProfileFragment extends Fragment {
             });
         }
 
-        btnLogout.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            Toast.makeText(getContext(), "Đã đăng xuất", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(getActivity(), LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            if (getActivity() != null) getActivity().finish();
-        });
+        if (cardLogout != null) {
+            cardLogout.setOnClickListener(v -> {
+                FirebaseAuth.getInstance().signOut();
+                Toast.makeText(getContext(), "Đã đăng xuất", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                if (getActivity() != null) getActivity().finish();
+            });
+        }
+    }
+
+    private final android.content.BroadcastReceiver notificationReceiver = new android.content.BroadcastReceiver() {
+        @Override
+        public void onReceive(android.content.Context context, Intent intent) {
+            updateNotificationDot();
+        }
+    };
+
+    private void updateNotificationDot() {
+        if (viewNotificationDot != null && getContext() != null) {
+            int count = vn.humg.hai.event_ticket_booking_app.utils.LocalNotificationDbHelper.getInstance(getContext()).getUnreadCount();
+            if (count > 0) {
+                viewNotificationDot.setVisibility(View.VISIBLE);
+            } else {
+                viewNotificationDot.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (getContext() != null) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                getContext().registerReceiver(notificationReceiver, 
+                    new android.content.IntentFilter("vn.humg.hai.event_ticket_booking_app.UPDATE_UNREAD_COUNT"), 
+                    android.content.Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                getContext().registerReceiver(notificationReceiver, 
+                    new android.content.IntentFilter("vn.humg.hai.event_ticket_booking_app.UPDATE_UNREAD_COUNT"));
+            }
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (getContext() != null) {
+            try {
+                getContext().unregisterReceiver(notificationReceiver);
+            } catch (Exception ignored) {}
+        }
     }
 
     @Override
@@ -120,6 +200,7 @@ public class ProfileFragment extends Fragment {
         super.onResume();
         loadUserProfile();
         calculateUserStats();
+        updateNotificationDot();
     }
 
     @Override
@@ -128,6 +209,7 @@ public class ProfileFragment extends Fragment {
         if (!hidden) {
             loadUserProfile();
             calculateUserStats();
+            updateNotificationDot();
         }
     }
 
@@ -148,8 +230,12 @@ public class ProfileFragment extends Fragment {
                             tvStatsPoints.setText(String.valueOf(user.getExp()));
                         }
                         
+                        int adminVisibility = "admin".equalsIgnoreCase(user.getRole()) ? View.VISIBLE : View.GONE;
                         if (menuAdmin != null) {
-                            menuAdmin.setVisibility("admin".equalsIgnoreCase(user.getRole()) ? View.VISIBLE : View.GONE);
+                            menuAdmin.setVisibility(adminVisibility);
+                        }
+                        if (viewAdminDivider != null) {
+                            viewAdminDivider.setVisibility(adminVisibility);
                         }
 
                         String avatarUrl = user.getAvatarName();

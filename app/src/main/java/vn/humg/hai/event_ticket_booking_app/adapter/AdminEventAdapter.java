@@ -102,6 +102,28 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Vi
                 .centerCrop()
                 .into(holder.ivImage);
 
+        // --- Hot Timer Logic (Admin Only) ---
+        if (event.isHot() && event.getHotSetAt() != null) {
+            long nowSeconds = System.currentTimeMillis() / 1000L;
+            long hotAgeSeconds = nowSeconds - event.getHotSetAt().getSeconds();
+            long duration = event.isAutoHot() ? (24 * 60 * 60) : (3 * 24 * 60 * 60);
+            long remainingSeconds = duration - hotAgeSeconds;
+
+            if (remainingSeconds > 0) {
+                holder.tvHotTimer.setVisibility(View.VISIBLE);
+                long hours = remainingSeconds / 3600;
+                if (hours >= 24) {
+                    holder.tvHotTimer.setText(String.format(Locale.getDefault(), "🔥 Còn %d ngày", hours / 24));
+                } else {
+                    holder.tvHotTimer.setText(String.format(Locale.getDefault(), "🔥 Còn %dh", hours));
+                }
+            } else {
+                holder.tvHotTimer.setVisibility(View.GONE);
+            }
+        } else {
+            holder.tvHotTimer.setVisibility(View.GONE);
+        }
+
         holder.btnEdit.setOnClickListener(v -> {
             if ("COMPLETED".equals(event.getStatus())) {
                 listener.onArchive(event);
@@ -128,7 +150,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Vi
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivImage;
-        TextView tvTitle, tvDate, tvStatus, tvAttendance;
+        TextView tvTitle, tvDate, tvStatus, tvAttendance, tvHotTimer;
         ImageButton btnAnalytics, btnEdit, btnDelete;
 
         ViewHolder(@NonNull View itemView) {
@@ -138,6 +160,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Vi
             tvDate = itemView.findViewById(R.id.tv_event_date);
             tvStatus = itemView.findViewById(R.id.tv_event_status);
             tvAttendance = itemView.findViewById(R.id.tv_event_attendance);
+            tvHotTimer = itemView.findViewById(R.id.tv_event_hot_timer);
             btnAnalytics = itemView.findViewById(R.id.btn_analytics);
             btnEdit = itemView.findViewById(R.id.btn_edit);
             btnDelete = itemView.findViewById(R.id.btn_delete);

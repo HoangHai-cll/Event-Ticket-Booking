@@ -481,7 +481,22 @@ public class AdminAddEventActivity extends AppCompatActivity {
         event.setGoogleMapsUrl(edtGoogleMapsUrl.getText().toString().trim());
         event.setFree(swIsFree.isChecked());
         event.setImage(imageUrl);
-        event.setHot(cbIsHot.getVisibility() == View.VISIBLE && cbIsHot.isChecked());
+        
+        boolean wasHot = event.isHot();
+        boolean isNowHot = cbIsHot.getVisibility() == View.VISIBLE && cbIsHot.isChecked();
+        event.setHot(isNowHot);
+        
+        // Nếu admin can thiệp thủ công:
+        // 1. Chuyển từ KHÔNG HOT sang HOT -> Đặt thời điểm HOT và tắt flag Tự động (để được 3 ngày)
+        // 2. Chuyển từ HOT sang KHÔNG HOT -> Xóa thời điểm HOT và flag Tự động
+        if (isNowHot && !wasHot) {
+            event.setHotSetAt(Timestamp.now());
+            event.setAutoHot(false); 
+        } else if (!isNowHot) {
+            event.setHotSetAt(null);
+            event.setAutoHot(false);
+        }
+
         event.setDate(new Timestamp(calendar.getTime()));
         // Phase A: Ghi nhận hạng thành viên tối thiểu để mua vé
         String selectedTier = spinnerRequiredTier.getText().toString().trim();
@@ -621,7 +636,7 @@ public class AdminAddEventActivity extends AppCompatActivity {
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
-    /** Kiểm tra quyền tạo Sự kiện Hot: chỉ Developer (Cấp 3) mới được phép gắn thẻ Hot cho sự kiện */
+    /** Kiểm tra quyền tạo Sự kiện Hot: Admin Cấp 2 (Manager) trở lên mới được phép gắn thẻ Hot cho sự kiện */
     private void checkHotEventPermission() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) {
@@ -629,11 +644,11 @@ public class AdminAddEventActivity extends AppCompatActivity {
             return;
         }
         userController.getAdminById(uid, admin -> {
-            if (admin != null && admin.getAccessLevel() == 3) {
-                // Cấp 3 (Developer): hiển thị checkbox Hot
+            if (admin != null && admin.getAccessLevel() >= 2) {
+                // Cấp 2 (Manager) và Cấp 3 (Developer): hiển thị checkbox Hot
                 runOnUiThread(() -> cbIsHot.setVisibility(View.VISIBLE));
             } else {
-                // Cấp 1 & 2: ẩn checkbox Hot, bỏ check mặc định
+                // Cấp 1: ẩn checkbox Hot, bỏ check mặc định
                 runOnUiThread(() -> {
                     cbIsHot.setVisibility(View.GONE);
                     cbIsHot.setChecked(false);

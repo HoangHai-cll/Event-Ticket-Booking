@@ -35,6 +35,8 @@ public class Event {
     private List<TicketTier> tiers;  // Hạng vé
     private String requiredTier; // Yêu cầu hạng thành viên để mua vé
     private int creatorAccessLevel = 1; // Cấp độ admin tạo: 1: Staff, 2: Manager, 3: Developer
+    private Timestamp hotSetAt; // Thời điểm đặt làm Hot Event
+    private boolean isAutoHot; // Đánh dấu là HOT tự động do doanh số
 
     public Event() {
         this.averageRating = 0;
@@ -131,4 +133,10 @@ public class Event {
 
     public int getCreatorAccessLevel() { return creatorAccessLevel; }
     public void setCreatorAccessLevel(int creatorAccessLevel) { this.creatorAccessLevel = creatorAccessLevel; }
+
+    public Timestamp getHotSetAt() { return hotSetAt; }
+    public void setHotSetAt(Timestamp hotSetAt) { this.hotSetAt = hotSetAt; }
+
+    public boolean isAutoHot() { return isAutoHot; }
+    public void setAutoHot(boolean autoHot) { isAutoHot = autoHot; }
 }

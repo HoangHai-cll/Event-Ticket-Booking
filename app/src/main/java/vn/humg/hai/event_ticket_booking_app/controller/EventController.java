@@ -1,5 +1,6 @@
 package vn.humg.hai.event_ticket_booking_app.controller;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
@@ -113,9 +114,22 @@ public class EventController {
             }
 
             int newRemaining = Math.max(0, event.getRemainingTicket() - quantitySold);
+            int oldSold = event.getTotalTicket() - event.getRemainingTicket();
+            int newSold = event.getTotalTicket() - newRemaining;
+
             transaction.update(
                     firestore.collection(EVENTS_COLLECTION).document(eventId),
                     "remainingTicket", newRemaining);
+
+            // Logic: Cứ mỗi khi bán được thêm 50 vé (mốc 50, 100, 150...), sự kiện lên HOT trong 1 ngày
+            if (newSold / 50 > oldSold / 50) {
+                transaction.update(
+                        firestore.collection(EVENTS_COLLECTION).document(eventId),
+                        "hot", true,
+                        "hotSetAt", Timestamp.now(),
+                        "autoHot", true // Đánh dấu là HOT tự động do doanh số
+                );
+            }
             return null;
         }).addOnSuccessListener(v -> onSuccess.run())
           .addOnFailureListener(e -> onError.accept(e.getMessage()));

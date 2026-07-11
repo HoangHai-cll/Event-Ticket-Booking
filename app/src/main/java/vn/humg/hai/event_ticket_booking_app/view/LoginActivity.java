@@ -1,8 +1,12 @@
 package vn.humg.hai.event_ticket_booking_app.view;
 
 import vn.humg.hai.event_ticket_booking_app.R;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
@@ -10,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import androidx.lifecycle.ViewModelProvider;
 import vn.humg.hai.event_ticket_booking_app.adapter.AuthResultAdapter;
 import vn.humg.hai.event_ticket_booking_app.utils.ValidationUtils;
@@ -20,6 +25,8 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton btnLogin, btnGoogle, btnFacebook;
     private TextView tvRegisterLink;
     private TextInputEditText edtEmail, edtPassword;
+    private TextInputLayout tilEmail, tilPassword;
+    private LinearLayout layoutContainer;
     private AuthViewModel authViewModel;
     private ActivityResultLauncher<Intent> registerLauncher;
 
@@ -55,6 +62,7 @@ public class LoginActivity extends AppCompatActivity {
         initViews();
         initEvents();
         prefillLoginFields();
+        startEntranceAnimation();
     }
 
     private void setupObservers() {
@@ -70,6 +78,9 @@ public class LoginActivity extends AppCompatActivity {
         authViewModel.getErrorState().observe(this, error -> {
             if (error != null) {
                 Toast.makeText(this, "Đăng nhập thất bại: " + error, Toast.LENGTH_LONG).show();
+                // Shake both layouts on general authentication failure
+                shakeView(tilEmail);
+                shakeView(tilPassword);
             }
         });
     }
@@ -92,6 +103,9 @@ public class LoginActivity extends AppCompatActivity {
         tvRegisterLink = findViewById(R.id.tv_link_register);
         edtEmail = findViewById(R.id.edt_login_email);
         edtPassword = findViewById(R.id.edt_login_password);
+        tilEmail = findViewById(R.id.til_login_email);
+        tilPassword = findViewById(R.id.til_login_password);
+        layoutContainer = findViewById(R.id.layout_login_container);
     }
 
     @Override
@@ -115,16 +129,20 @@ public class LoginActivity extends AppCompatActivity {
 
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Vui lòng nhập đầy đủ email và mật khẩu.", Toast.LENGTH_SHORT).show();
+                if (email.isEmpty()) shakeView(tilEmail);
+                if (password.isEmpty()) shakeView(tilPassword);
                 return;
             }
 
             if (!ValidationUtils.isValidEmail(email)) {
                 Toast.makeText(this, "Định dạng Email không hợp lệ.", Toast.LENGTH_SHORT).show();
+                shakeView(tilEmail);
                 return;
             }
 
             if (!ValidationUtils.isValidPassword(password)) {
                 Toast.makeText(this, "Mật khẩu phải chứa ít nhất 6 ký tự.", Toast.LENGTH_SHORT).show();
+                shakeView(tilPassword);
                 return;
             }
 
@@ -137,5 +155,31 @@ public class LoginActivity extends AppCompatActivity {
 
         btnFacebook.setOnClickListener(v ->
                 Toast.makeText(this, "Đăng nhập bằng Facebook...", Toast.LENGTH_SHORT).show());
+    }
+
+    /**
+     * Triggers a smooth slide-up and fade-in entrance animation for the login container.
+     */
+    private void startEntranceAnimation() {
+        if (layoutContainer != null) {
+            layoutContainer.setAlpha(0f);
+            layoutContainer.setTranslationY(80f);
+            layoutContainer.animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(600)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .start();
+        }
+    }
+
+    /**
+     * Plays a horizontal shake animation on the specified view to indicate a validation error.
+     */
+    private void shakeView(View view) {
+        if (view == null) return;
+        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "translationX", 0, 25, -25, 25, -25, 15, -15, 6, -6, 0);
+        animator.setDuration(500);
+        animator.start();
     }
 }

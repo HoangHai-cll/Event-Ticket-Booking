@@ -1,7 +1,14 @@
 package vn.humg.hai.event_ticket_booking_app.fragments;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -28,10 +35,16 @@ import androidx.lifecycle.ViewModelProvider;
 import vn.humg.hai.event_ticket_booking_app.adapter.EventAdapter;
 import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 import vn.humg.hai.event_ticket_booking_app.viewmodel.EventViewModel;
+import vn.humg.hai.event_ticket_booking_app.viewmodel.BookingViewModel;
 import vn.humg.hai.event_ticket_booking_app.model.Event;
 import vn.humg.hai.event_ticket_booking_app.model.Favorite;
+import vn.humg.hai.event_ticket_booking_app.model.Booking;
+import vn.humg.hai.event_ticket_booking_app.utils.LocalNotificationDbHelper;
+import vn.humg.hai.event_ticket_booking_app.utils.MyFirebaseMessagingService;
+import vn.humg.hai.event_ticket_booking_app.utils.EventReminderReceiver;
 import vn.humg.hai.event_ticket_booking_app.view.EventDetailActivity;
 import vn.humg.hai.event_ticket_booking_app.view.MainActivity;
+import vn.humg.hai.event_ticket_booking_app.view.NotificationActivity;
 
 public class HomeFragment extends Fragment {
     private EventViewModel eventViewModel;
@@ -46,16 +59,42 @@ public class HomeFragment extends Fragment {
     private EventAdapter hotEventAdapter;
     
     private RecyclerView recyclerEvents, recyclerHotEvents;
-    private TextView tvSeeAll, chipMusic, chipSeminar, chipWorkshop, tvHotTitle, tvAllTitle;
+    private TextView tvSeeAll, chipMusic, chipSeminar, chipWorkshop, tvHotTitle, tvAllTitle, tvNoResults;
     private ImageView ivProfileTop;
     private TextView chipUpcoming, chipPast;
     private EditText etSearch;
+    private ImageView ivSearchIcon, ivLayoutToggle;
     private ImageButton btnMenuDrawer;
     private View layoutSearch, layoutHotEvents, layoutCategories, layoutTimeFilters;
+    private View dividerNoResults, dividerAfterCategories;
     
     private String selectedCategory = null;
     private boolean showUpcomingOnly = true;
     private boolean showFavoritesOnly = false;
+    private boolean useCompactLayout = false;
+
+    // Notifications and Countdown Views/Logic
+    private View layoutNotificationBell;
+    private TextView tvNotificationBadge;
+    private View cardCountdownTimer;
+    private View btnCloseCountdownCard;
+    private TextView tvCountdownEventTitle;
+    private TextView tvCountdownDays, tvCountdownHours, tvCountdownMinutes, tvCountdownSeconds;
+    private View layoutSimpleDays;
+    private TextView tvCountdownDaysSimple;
+    private View layoutBentoCountdown;
+    private boolean isCountdownCardDismissed = false;
+    
+    // Floating Egg Countdown Views/Logic
+    private View layoutFloatingEggContainer;
+    private View layoutFloatingEgg;
+    private TextView tvFloatingCountdown;
+    private View btnCloseFloatingEgg;
+    private boolean isFloatingEggDismissed = false;
+
+    private BroadcastReceiver unreadUpdateReceiver;
+    private BookingViewModel bookingViewModel;
+    private CountDownTimer countDownTimer;
 
     @Nullable
     @Override
@@ -64,7 +103,11 @@ public class HomeFragment extends Fragment {
         
         eventViewModel = new ViewModelProvider(this).get(EventViewModel.class);
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        bookingViewModel = new ViewModelProvider(this).get(BookingViewModel.class);
+        
         setupObservers();
+        setupBookingObservers();
+        setupNotificationReceiver();
 
         initViews(view);
         setupRecyclerView();
@@ -147,9 +190,28 @@ public class HomeFragment extends Fragment {
                 
                 hotEventList.clear();
                 long now = System.currentTimeMillis() / 1000L;
+                long threeDaysInSeconds = 3 * 24 * 60 * 60;
+                long oneDayInSeconds = 24 * 60 * 60;
+
                 for (Event e : sortedEvents) {
                     boolean expired = e.getDate() != null && e.getDate().getSeconds() < now;
-                    if (e.isHot() && !expired) hotEventList.add(e);
+                    
+                    // Logic Hot Event mới:
+                    // 1. Phải được đánh dấu isHot = true
+                    // 2. Sự kiện chưa diễn ra (expired = false)
+                    // 3. Thời gian tồn tại:
+                    //    - Nếu là Auto Hot (do bán 50 vé): tồn tại 1 ngày.
+                    //    - Nếu là Admin đặt: tồn tại 3 ngày.
+                    boolean withinHotDuration = true;
+                    if (e.isHot() && e.getHotSetAt() != null) {
+                        long hotAgeSeconds = now - e.getHotSetAt().getSeconds();
+                        long duration = e.isAutoHot() ? oneDayInSeconds : threeDaysInSeconds;
+                        withinHotDuration = hotAgeSeconds <= duration;
+                    }
+
+                    if (e.isHot() && !expired && withinHotDuration) {
+                        hotEventList.add(e);
+                    }
                 }
 
                 hotEventAdapter.notifyDataSetChanged();
@@ -168,16 +230,41 @@ public class HomeFragment extends Fragment {
         chipUpcoming = view.findViewById(R.id.chip_upcoming);
         chipPast = view.findViewById(R.id.chip_past);
         etSearch = view.findViewById(R.id.et_search);
+        ivSearchIcon = view.findViewById(R.id.iv_search_icon);
+        ivLayoutToggle = view.findViewById(R.id.iv_layout_toggle);
         ivProfileTop = view.findViewById(R.id.iv_profile_top);
+
+        // Khởi tạo các view thông báo và đếm ngược mới
+        layoutNotificationBell = view.findViewById(R.id.layout_notification_bell);
+        tvNotificationBadge = view.findViewById(R.id.tv_notification_badge);
+        cardCountdownTimer = view.findViewById(R.id.card_countdown_timer);
+        btnCloseCountdownCard = view.findViewById(R.id.btn_close_countdown_card);
+        tvCountdownEventTitle = view.findViewById(R.id.tv_countdown_event_title);
+        tvCountdownDays = view.findViewById(R.id.tv_countdown_days);
+        tvCountdownHours = view.findViewById(R.id.tv_countdown_hours);
+        tvCountdownMinutes = view.findViewById(R.id.tv_countdown_minutes);
+        tvCountdownSeconds = view.findViewById(R.id.tv_countdown_seconds);
+        layoutSimpleDays = view.findViewById(R.id.layout_simple_days);
+        tvCountdownDaysSimple = view.findViewById(R.id.tv_countdown_days_simple);
+        layoutBentoCountdown = view.findViewById(R.id.layout_bento_countdown);
+        
+        // Khởi tạo các view quả trứng thông báo nổi
+        layoutFloatingEggContainer = view.findViewById(R.id.layout_floating_egg_container);
+        layoutFloatingEgg = view.findViewById(R.id.layout_floating_egg);
+        tvFloatingCountdown = view.findViewById(R.id.tv_floating_countdown);
+        btnCloseFloatingEgg = view.findViewById(R.id.btn_close_floating_egg);
         
         tvHotTitle = view.findViewById(R.id.tv_hot_events_title); 
         tvAllTitle = view.findViewById(R.id.tv_all_events_title);
+        tvNoResults = view.findViewById(R.id.tv_no_results);
         btnMenuDrawer = view.findViewById(R.id.btn_menu_drawer);
         
         layoutSearch = view.findViewById(R.id.layout_search);
         layoutHotEvents = view.findViewById(R.id.layout_hot_events);
         layoutCategories = view.findViewById(R.id.layout_categories);
         layoutTimeFilters = view.findViewById(R.id.layout_time_filters);
+        dividerNoResults = view.findViewById(R.id.divider_no_results);
+        dividerAfterCategories = view.findViewById(R.id.divider_after_categories);
     }
 
     private void checkUserRoleAndAdjustUI() {
@@ -247,6 +334,43 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        if (layoutNotificationBell != null) {
+            layoutNotificationBell.setOnClickListener(v -> {
+                Intent intent = new Intent(getContext(), NotificationActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        if (layoutFloatingEgg != null) {
+            layoutFloatingEgg.setOnClickListener(v -> {
+                if (getView() != null) {
+                    androidx.core.widget.NestedScrollView scrollView = getView().findViewById(R.id.nested_scroll_view);
+                    if (scrollView != null) {
+                        scrollView.smoothScrollTo(0, 0);
+                    }
+                }
+                Toast.makeText(getContext(), "Cuộn lên đầu trang để xem chi tiết sự kiện sắp diễn ra!", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnCloseFloatingEgg != null) {
+            btnCloseFloatingEgg.setOnClickListener(v -> {
+                isFloatingEggDismissed = true;
+                if (layoutFloatingEggContainer != null) {
+                    layoutFloatingEggContainer.setVisibility(View.GONE);
+                }
+            });
+        }
+
+        if (btnCloseCountdownCard != null) {
+            btnCloseCountdownCard.setOnClickListener(v -> {
+                isCountdownCardDismissed = true;
+                if (cardCountdownTimer != null) {
+                    cardCountdownTimer.setVisibility(View.GONE);
+                }
+            });
+        }
+
         tvSeeAll.setOnClickListener(v -> resetFilter());
         
         if (etSearch != null) {
@@ -256,6 +380,29 @@ public class HomeFragment extends Fragment {
                     applyFilters();
                 }
                 @Override public void afterTextChanged(Editable s) {}
+            });
+
+            etSearch.setOnEditorActionListener((v, actionId, event) -> {
+                if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                    applyFilters();
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        if (ivSearchIcon != null) {
+            ivSearchIcon.setOnClickListener(v -> applyFilters());
+        }
+
+        if (ivLayoutToggle != null) {
+            ivLayoutToggle.setOnClickListener(v -> {
+                useCompactLayout = !useCompactLayout;
+                if (eventAdapter != null) {
+                    eventAdapter.setUseCompactLayout(useCompactLayout);
+                }
+                // Update icon: Show 'Tickets' icon when in List mode, 'Menu' icon when in Card mode
+                ivLayoutToggle.setImageResource(useCompactLayout ? R.drawable.ic_nav_tickets : R.drawable.ic_menu);
             });
         }
 
@@ -324,6 +471,26 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         loadEvents();
+        updateNotificationBadge();
+        loadUserBookings();
+        
+        // Xin quyền thông báo trên Android 13+ (API 33+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (getContext() != null && androidx.core.content.ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+    }
+
+    private void loadUserBookings() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid != null) {
+            bookingViewModel.loadUserBookings(uid);
+        } else {
+            if (cardCountdownTimer != null) {
+                cardCountdownTimer.setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override
@@ -331,6 +498,8 @@ public class HomeFragment extends Fragment {
         super.onHiddenChanged(hidden);
         if (!hidden) {
             loadEvents();
+            updateNotificationBadge();
+            loadUserBookings();
         }
     }
 
@@ -384,6 +553,13 @@ public class HomeFragment extends Fragment {
         if (chipSeminar != null) chipSeminar.setText("Hội thảo (" + seminarCount + ")");
         if (chipWorkshop != null) chipWorkshop.setText("Workshop (" + workshopCount + ")");
 
+        String queryStr = (etSearch != null && etSearch.getText() != null) ? etSearch.getText().toString().toLowerCase().trim() : "";
+
+        // Hide Hot Events section if searching
+        if (layoutHotEvents != null) {
+            layoutHotEvents.setVisibility(!queryStr.isEmpty() ? View.GONE : View.VISIBLE);
+        }
+
         // Step 2: Apply active filters
         for (Event e : fullEventList) {
             boolean isExpired = e.getDate() != null && e.getDate().getSeconds() < now;
@@ -401,15 +577,71 @@ public class HomeFragment extends Fragment {
                 continue;
             }
 
-            // Search query filter
-            if (etSearch != null && etSearch.getText() != null) {
-                String query = etSearch.getText().toString().toLowerCase().trim();
-                if (!query.isEmpty() && !e.getTitle().toLowerCase().contains(query)) {
+            // Search query filter (Partial match in title, description, location, etc.)
+            if (!queryStr.isEmpty()) {
+                boolean matchesTitle = e.getTitle() != null && e.getTitle().toLowerCase().contains(queryStr);
+                boolean matchesDesc = e.getDescription() != null && e.getDescription().toLowerCase().contains(queryStr);
+                boolean matchesLoc = e.getLocation() != null && e.getLocation().toLowerCase().contains(queryStr);
+                boolean matchesOrg = e.getOrganizerName() != null && e.getOrganizerName().toLowerCase().contains(queryStr);
+                boolean matchesArtist = e.getArtistName() != null && e.getArtistName().toLowerCase().contains(queryStr);
+                
+                boolean matchesTags = false;
+                if (e.getTags() != null) {
+                    for (String tag : e.getTags()) {
+                        if (tag.toLowerCase().contains(queryStr)) {
+                            matchesTags = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!matchesTitle && !matchesDesc && !matchesLoc && !matchesOrg && !matchesArtist && !matchesTags) {
                     continue;
                 }
             }
 
             displayList.add(e);
+        }
+
+        // Step 2.5: If displayList is empty and query is not empty, show red warning and suggest related events
+        if (!queryStr.isEmpty() && displayList.isEmpty()) {
+            if (tvNoResults != null) {
+                tvNoResults.setVisibility(View.VISIBLE);
+            }
+            if (dividerNoResults != null) {
+                dividerNoResults.setVisibility(View.VISIBLE);
+            }
+            
+            // Suggest upcoming related events
+            int suggestionLimit = 4;
+            int count = 0;
+            for (Event e : fullEventList) {
+                boolean isExpired = e.getDate() != null && e.getDate().getSeconds() < now;
+                if (!isExpired) {
+                    // Match category if selected, else take any upcoming
+                    if (selectedCategory == null || selectedCategory.equalsIgnoreCase(e.getCategory())) {
+                        displayList.add(e);
+                        count++;
+                        if (count >= suggestionLimit) break;
+                    }
+                }
+            }
+
+            // Fallback: If no upcoming events, suggest any events
+            if (displayList.isEmpty()) {
+                for (Event e : fullEventList) {
+                    displayList.add(e);
+                    count++;
+                    if (count >= suggestionLimit) break;
+                }
+            }
+        } else {
+            if (tvNoResults != null) {
+                tvNoResults.setVisibility(View.GONE);
+            }
+            if (dividerNoResults != null) {
+                dividerNoResults.setVisibility(View.GONE);
+            }
         }
 
         // Step 3: Update styles
@@ -479,9 +711,236 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void openEventDetail(Event event) {
+    private void openEventDetail(Event event, ImageView imageView) {
         Intent intent = new Intent(getContext(), EventDetailActivity.class);
         intent.putExtra("EXTRA_EVENT_ID", event.getEventId());
-        startActivity(intent);
+        
+        if (getActivity() != null && imageView != null) {
+            String transitionName = androidx.core.view.ViewCompat.getTransitionName(imageView);
+            intent.putExtra("EXTRA_TRANSITION_NAME", transitionName);
+            
+            androidx.core.app.ActivityOptionsCompat options = 
+                androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    getActivity(), imageView, transitionName
+                );
+            startActivity(intent, options.toBundle());
+        } else {
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (getContext() != null && unreadUpdateReceiver != null) {
+            getContext().unregisterReceiver(unreadUpdateReceiver);
+        }
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
+    private void setupNotificationReceiver() {
+        unreadUpdateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateNotificationBadge();
+            }
+        };
+        if (getContext() != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                getContext().registerReceiver(unreadUpdateReceiver, new IntentFilter(MyFirebaseMessagingService.ACTION_UPDATE_UNREAD), Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                getContext().registerReceiver(unreadUpdateReceiver, new IntentFilter(MyFirebaseMessagingService.ACTION_UPDATE_UNREAD));
+            }
+        }
+    }
+
+    private void updateNotificationBadge() {
+        if (getContext() == null || tvNotificationBadge == null) return;
+        int count = LocalNotificationDbHelper.getInstance(getContext()).getUnreadCount();
+        if (count > 0) {
+            tvNotificationBadge.setVisibility(View.VISIBLE);
+            tvNotificationBadge.setText(String.valueOf(count));
+        } else {
+            tvNotificationBadge.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupBookingObservers() {
+        bookingViewModel.getBookingsState().observe(getViewLifecycleOwner(), bookings -> {
+            if (bookings == null || bookings.isEmpty() || !isAdded()) {
+                if (cardCountdownTimer != null) {
+                    cardCountdownTimer.setVisibility(View.GONE);
+                }
+                return;
+            }
+
+            long now = System.currentTimeMillis() / 1000L;
+            Event closestEvent = null;
+            long minDiff = Long.MAX_VALUE;
+
+            for (Booking booking : bookings) {
+                if ("Cancelled".equalsIgnoreCase(booking.getStatus())) continue;
+                
+                for (Event event : fullEventList) {
+                    if (event.getEventId().equals(booking.getEventId())) {
+                        if (event.getDate() != null) {
+                            long eventTime = event.getDate().getSeconds();
+                            if (eventTime > now) {
+                                long diff = eventTime - now;
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    closestEvent = event;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (closestEvent != null) {
+                startCountdown(closestEvent);
+                scheduleEventReminders();
+            } else {
+                if (cardCountdownTimer != null) {
+                    cardCountdownTimer.setVisibility(View.GONE);
+                }
+                if (layoutFloatingEggContainer != null) {
+                    layoutFloatingEggContainer.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
+    private void startCountdown(Event event) {
+        if (cardCountdownTimer == null || tvCountdownEventTitle == null 
+                || tvCountdownDays == null || tvCountdownHours == null 
+                || tvCountdownMinutes == null || tvCountdownSeconds == null) return;
+
+        tvCountdownEventTitle.setText(event.getTitle());
+        if (!isCountdownCardDismissed) {
+            cardCountdownTimer.setVisibility(View.VISIBLE);
+        } else {
+            cardCountdownTimer.setVisibility(View.GONE);
+        }
+
+        long targetMs = event.getDate().getSeconds() * 1000L;
+        long currentMs = System.currentTimeMillis();
+        long diffMs = targetMs - currentMs;
+
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
+        final long fortyEightHoursMs = 48 * 3600 * 1000L;
+
+        if (diffMs <= 0) {
+            cardCountdownTimer.setVisibility(View.GONE);
+            if (layoutFloatingEggContainer != null) {
+                layoutFloatingEggContainer.setVisibility(View.GONE);
+            }
+            return;
+        }
+
+        // Cập nhật trạng thái hiển thị của các layout và đồng hồ nổi dựa trên 48h ban đầu
+        if (diffMs > fortyEightHoursMs) {
+            // Hơn 48h: Hiện đếm ngày đơn giản, ẩn Bento Grid, ẩn đồng hồ nổi
+            if (layoutSimpleDays != null) layoutSimpleDays.setVisibility(View.VISIBLE);
+            if (layoutBentoCountdown != null) layoutBentoCountdown.setVisibility(View.GONE);
+            if (layoutFloatingEggContainer != null) layoutFloatingEggContainer.setVisibility(View.GONE);
+
+            long initialDays = diffMs / (24 * 3600 * 1000L);
+            if (tvCountdownDaysSimple != null) {
+                tvCountdownDaysSimple.setText("Còn " + initialDays + " ngày nữa diễn ra");
+            }
+        } else {
+            // Dưới 48h: Hiện Bento Grid, ẩn đếm ngày đơn giản, hiện đồng hồ nổi
+            if (layoutSimpleDays != null) layoutSimpleDays.setVisibility(View.GONE);
+            if (layoutBentoCountdown != null) layoutBentoCountdown.setVisibility(View.VISIBLE);
+            if (layoutFloatingEggContainer != null && !isFloatingEggDismissed) {
+                layoutFloatingEggContainer.setVisibility(View.VISIBLE);
+            }
+        }
+
+        countDownTimer = new CountDownTimer(diffMs, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (!isAdded()) return;
+                long seconds = millisUntilFinished / 1000;
+                long days = seconds / (24 * 3600);
+                seconds %= (24 * 3600);
+                long hours = seconds / 3600;
+                seconds %= 3600;
+                long minutes = seconds / 60;
+                long secs = seconds % 60;
+
+                if (millisUntilFinished > fortyEightHoursMs) {
+                    // Trên 48 tiếng: Hiện đơn giản, ẩn bento, ẩn đồng hồ nổi
+                    if (layoutSimpleDays != null) layoutSimpleDays.setVisibility(View.VISIBLE);
+                    if (layoutBentoCountdown != null) layoutBentoCountdown.setVisibility(View.GONE);
+                    if (layoutFloatingEggContainer != null) {
+                        layoutFloatingEggContainer.setVisibility(View.GONE);
+                    }
+                    if (tvCountdownDaysSimple != null) {
+                        tvCountdownDaysSimple.setText("Còn " + days + " ngày nữa diễn ra");
+                    }
+                } else {
+                    // Dưới 48 tiếng: Hiện bento, ẩn đơn giản, hiện đồng hồ nổi
+                    if (layoutSimpleDays != null) layoutSimpleDays.setVisibility(View.GONE);
+                    if (layoutBentoCountdown != null) layoutBentoCountdown.setVisibility(View.VISIBLE);
+                    
+                    if (layoutFloatingEggContainer != null && !isFloatingEggDismissed) {
+                        layoutFloatingEggContainer.setVisibility(View.VISIBLE);
+                    }
+
+                    // Cập nhật Bento Grid ở đầu trang
+                    tvCountdownDays.setText(String.format(java.util.Locale.getDefault(), "%02d", days));
+                    tvCountdownHours.setText(String.format(java.util.Locale.getDefault(), "%02d", hours));
+                    tvCountdownMinutes.setText(String.format(java.util.Locale.getDefault(), "%02d", minutes));
+                    tvCountdownSeconds.setText(String.format(java.util.Locale.getDefault(), "%02d", secs));
+
+                    // Cập nhật đồng hồ đếm ngược nổi ở góc dưới bên phải dạng HH:MM:SS
+                    if (tvFloatingCountdown != null) {
+                        long totalHours = (days * 24) + hours;
+                        tvFloatingCountdown.setText(String.format(java.util.Locale.getDefault(), "%02d:%02d:%02d", totalHours, minutes, secs));
+                    }
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                if (isAdded()) {
+                    cardCountdownTimer.setVisibility(View.GONE);
+                    if (layoutFloatingEggContainer != null) {
+                        layoutFloatingEggContainer.setVisibility(View.GONE);
+                    }
+                }
+            }
+        }.start();
+    }
+
+    private void scheduleEventReminders() {
+        if (getContext() == null) return;
+        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(getContext(), EventReminderReceiver.class);
+        
+        PendingIntent pendingIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            pendingIntent = PendingIntent.getBroadcast(getContext(), 2002, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        } else {
+            pendingIntent = PendingIntent.getBroadcast(getContext(), 2002, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        }
+
+        if (alarmManager != null) {
+            long interval = 2 * 60 * 60 * 1000L;
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis() + interval,
+                    interval,
+                    pendingIntent);
+        }
     }
 }

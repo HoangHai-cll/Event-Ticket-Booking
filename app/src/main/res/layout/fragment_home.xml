@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/transparent"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nested_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:fillViewport="true">
+
+        <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -35,6 +40,42 @@
                 android:textColor="@color/brand_primary"
                 android:textSize="22sp"
                 android:textStyle="bold" />
+
+            <!-- Nút chuông thông báo vàng -->
+            <RelativeLayout
+                android:id="@+id/layout_notification_bell"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView
+                    android:id="@+id/btn_notifications_bell"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_bell"
+                    app:tint="#FFC107"
+                    android:background="@drawable/bg_circle_gray"
+                    android:contentDescription="Thông báo" />
+
+                <TextView
+                    android:id="@+id/tv_notification_badge"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/bg_circle_red"
+                    android:textColor="@color/white"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:text="0"
+                    android:visibility="gone" />
+            </RelativeLayout>
+
             <ImageView
                 android:id="@+id/iv_profile_top"
                 android:layout_width="40dp"
@@ -46,26 +87,267 @@
                 android:contentDescription="Profile" />
         </LinearLayout>
 
+        <!-- Countdown Timer Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_countdown_timer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:visibility="gone"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E8E2D5">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="#F9F6EE">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="SỰ KIỆN SẮP DIỄN RA"
+                        android:textColor="@color/ink_dark"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1" />
+
+                    <!-- Nút tắt (X) có thể đóng card -->
+                    <ImageView
+                        android:id="@+id/btn_close_countdown_card"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_close"
+                        app:tint="@color/ink_dark"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:contentDescription="Đóng" />
+                </RelativeLayout>
+
+                <!-- Tên sự kiện kèm Icon ngọn lửa HOT -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="6dp">
+
+                    <TextView
+                        android:id="@+id/tv_countdown_event_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tên sự kiện của bạn"
+                        android:textColor="@color/ink_dark"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:ellipsize="end"
+                        android:maxLines="1" />
+
+                    <ImageView
+                        android:id="@+id/iv_fire_icon"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginStart="6dp"
+                        android:src="@drawable/ic_fire"
+                        app:tint="#EF4444"
+                        android:contentDescription="Hot" />
+                </LinearLayout>
+
+                <!-- Simple Days remaining for > 48h -->
+                <LinearLayout
+                    android:id="@+id/layout_simple_days"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp"
+                    android:background="@drawable/bg_circle_white"
+                    android:backgroundTint="#EFECE4"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_stopwatch"
+                        app:tint="@color/brand_primary" />
+
+                    <TextView
+                        android:id="@+id/tv_countdown_days_simple"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Còn 5 ngày nữa diễn ra"
+                        android:textColor="@color/ink_dark"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Bento Grid Countdown Timer -->
+                <LinearLayout
+                    android:id="@+id/layout_bento_countdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center">
+
+                    <!-- Days Block -->
+                    <LinearLayout
+                        android:layout_width="60dp"
+                        android:layout_height="65dp"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_circle_white"
+                        android:backgroundTint="#2A2A3E"
+                        android:gravity="center"
+                        android:layout_marginEnd="8dp">
+                        <TextView
+                            android:id="@+id/tv_countdown_days"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="00"
+                            android:textColor="#FFC107"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ngày"
+                            android:textColor="#94A3B8"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <!-- Hours Block -->
+                    <LinearLayout
+                        android:layout_width="60dp"
+                        android:layout_height="65dp"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_circle_white"
+                        android:backgroundTint="#2A2A3E"
+                        android:gravity="center"
+                        android:layout_marginEnd="8dp">
+                        <TextView
+                            android:id="@+id/tv_countdown_hours"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="00"
+                            android:textColor="@color/white"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Giờ"
+                            android:textColor="#94A3B8"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <!-- Minutes Block -->
+                    <LinearLayout
+                        android:layout_width="60dp"
+                        android:layout_height="65dp"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_circle_white"
+                        android:backgroundTint="#2A2A3E"
+                        android:gravity="center"
+                        android:layout_marginEnd="8dp">
+                        <TextView
+                            android:id="@+id/tv_countdown_minutes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="00"
+                            android:textColor="@color/white"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Phút"
+                            android:textColor="#94A3B8"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <!-- Seconds Block -->
+                    <LinearLayout
+                        android:layout_width="60dp"
+                        android:layout_height="65dp"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_circle_white"
+                        android:backgroundTint="#2A2A3E"
+                        android:gravity="center">
+                        <TextView
+                            android:id="@+id/tv_countdown_seconds"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="00"
+                            android:textColor="#EF4444"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Giây"
+                            android:textColor="#94A3B8"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Search (Ẩn cho Admin) -->
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/layout_search"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="18dp"
-            android:background="@drawable/bg_search_input">
+            android:background="@drawable/bg_search_input"
+            android:paddingHorizontal="14dp">
+
+            <ImageView
+                android:id="@+id/iv_search_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_search"
+                app:tint="@color/text_muted"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
             <EditText
                 android:id="@+id/et_search"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_toEndOf="@id/iv_search_icon"
+                android:layout_marginStart="10dp"
                 android:background="@android:color/transparent"
-                android:drawableStart="@android:drawable/ic_menu_search"
-                android:drawablePadding="10dp"
                 android:hint="@string/search_hint"
-                android:padding="14dp"
                 android:textColor="@color/ink_dark"
                 android:textSize="14sp"
-                android:inputType="text" />
-        </LinearLayout>
+                android:inputType="text"
+                android:imeOptions="actionSearch" />
+        </RelativeLayout>
+
+        <!-- Divider after Search -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:background="#33000000" />
 
         <!-- FRAME: HOT EVENTS (Ẩn cho Admin) -->
         <LinearLayout
@@ -73,15 +355,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <TextView
-                android:id="@+id/tv_hot_events_title"
-                android:layout_width="wrap_content"
+
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/hot_events_title"
-                android:textColor="@color/ink_dark"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="24dp">
+
+                <TextView
+                    android:id="@+id/tv_hot_events_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/hot_events_title"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_toEndOf="@id/tv_hot_events_title"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_fire" />
+            </RelativeLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_hot_events"
@@ -90,6 +386,13 @@
                 android:layout_marginTop="12dp"
                 android:orientation="horizontal"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <!-- Divider after Hot Events -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="24dp"
+                android:background="#33000000" />
         </LinearLayout>
 
         <!-- FRAME: ALL EVENTS -->
@@ -109,6 +412,19 @@
                 android:textColor="@color/ink_dark"
                 android:textSize="20sp"
                 android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/iv_layout_toggle"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="6dp"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/ic_menu"
+                app:tint="@color/brand_primary"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true" />
+
             <TextView
                 android:id="@+id/tv_see_all"
                 android:layout_width="wrap_content"
@@ -219,6 +535,34 @@
             </LinearLayout>
         </HorizontalScrollView>
 
+        <!-- Divider after Categories -->
+        <View
+            android:id="@+id/divider_after_categories"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="#33000000" />
+
+        <TextView
+            android:id="@+id/tv_no_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Không tìm thấy kết quả phù hợp. Các sự kiện gợi ý cho bạn:"
+            android:textColor="@color/brand_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- Divider after No Results Message -->
+        <View
+            android:id="@+id/divider_no_results"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="#33000000"
+            android:visibility="gone" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_events"
             android:layout_width="match_parent"
@@ -230,4 +574,70 @@
             android:layout_width="match_parent"
             android:layout_height="24dp" />
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Floating Clock Countdown Widget -->
+    <RelativeLayout
+        android:id="@+id/layout_floating_egg_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="90dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone">
+
+        <!-- Circular Premium Stopwatch Bubble -->
+        <LinearLayout
+            android:id="@+id/layout_floating_egg"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_floating_clock"
+            android:elevation="8dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <!-- Clock/Stopwatch Icon -->
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_stopwatch"
+                app:tint="#FFB300" />
+
+            <!-- Time Ticking -->
+            <TextView
+                android:id="@+id/tv_floating_countdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="00:00:00"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:fontFamily="sans-serif-black" />
+        </LinearLayout>
+
+        <!-- Small Close Button X overlapping top-right of the clock -->
+        <ImageView
+            android:id="@+id/btn_close_floating_egg"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignTop="@id/layout_floating_egg"
+            android:layout_alignEnd="@id/layout_floating_egg"
+            android:layout_marginTop="-4dp"
+            android:layout_marginEnd="-4dp"
+            android:background="@drawable/bg_circle_red"
+            android:backgroundTint="#475569"
+            android:src="@drawable/ic_close"
+            android:padding="5dp"
+            app:tint="@color/white"
+            android:elevation="9dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Đóng" />
+    </RelativeLayout>
+
+</FrameLayout>

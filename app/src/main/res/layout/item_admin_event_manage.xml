@@ -98,6 +98,21 @@
                     android:textColor="@color/text_muted"
                     android:textSize="13sp"
                     tools:text="Oct 24, 2024" />
+
+                <TextView
+                    android:id="@+id/tv_event_hot_timer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:background="#FFF2EB"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="2dp"
+                    android:textColor="#FF5C00"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:text="🔥 Còn 2 ngày"
+                    tools:visibility="visible" />
             </LinearLayout>
 
             <View

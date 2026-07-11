@@ -164,8 +164,9 @@ public class ProfileFragment extends Fragment {
             final android.content.Context appContext = getContext().getApplicationContext();
             new Thread(() -> {
                 final int count = vn.humg.hai.event_ticket_booking_app.utils.LocalNotificationDbHelper.getInstance(appContext).getUnreadCount();
-                if (isAdded() && getActivity() != null) {
-                    getActivity().runOnUiThread(() -> {
+                android.app.Activity activity = getActivity();
+                if (isAdded() && activity != null) {
+                    activity.runOnUiThread(() -> {
                         if (viewNotificationDot != null) {
                             if (count > 0) {
                                 viewNotificationDot.setVisibility(View.VISIBLE);

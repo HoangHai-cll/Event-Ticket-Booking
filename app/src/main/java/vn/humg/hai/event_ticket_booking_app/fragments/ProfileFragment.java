@@ -160,13 +160,22 @@ public class ProfileFragment extends Fragment {
     };
 
     private void updateNotificationDot() {
-        if (viewNotificationDot != null && getContext() != null) {
-            int count = vn.humg.hai.event_ticket_booking_app.utils.LocalNotificationDbHelper.getInstance(getContext()).getUnreadCount();
-            if (count > 0) {
-                viewNotificationDot.setVisibility(View.VISIBLE);
-            } else {
-                viewNotificationDot.setVisibility(View.GONE);
-            }
+        if (viewNotificationDot != null && getContext() != null && isAdded() && !isHidden()) {
+            final android.content.Context appContext = getContext().getApplicationContext();
+            new Thread(() -> {
+                final int count = vn.humg.hai.event_ticket_booking_app.utils.LocalNotificationDbHelper.getInstance(appContext).getUnreadCount();
+                if (isAdded() && getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        if (viewNotificationDot != null) {
+                            if (count > 0) {
+                                viewNotificationDot.setVisibility(View.VISIBLE);
+                            } else {
+                                viewNotificationDot.setVisibility(View.GONE);
+                            }
+                        }
+                    });
+                }
+            }).start();
         }
     }
 

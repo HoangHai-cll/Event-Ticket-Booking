@@ -84,6 +84,7 @@ public class HomeFragment extends Fragment {
     private TextView tvCountdownDaysSimple;
     private View layoutBentoCountdown;
     private boolean isCountdownCardDismissed = false;
+    private long lastDisplayedDays = -1;
     
     // Floating Egg Countdown Views/Logic
     private View layoutFloatingEggContainer;
@@ -852,6 +853,7 @@ public class HomeFragment extends Fragment {
             if (layoutFloatingEggContainer != null) layoutFloatingEggContainer.setVisibility(View.GONE);
 
             long initialDays = diffMs / (24 * 3600 * 1000L);
+            lastDisplayedDays = initialDays;
             if (tvCountdownDaysSimple != null) {
                 tvCountdownDaysSimple.setText("Còn " + initialDays + " ngày nữa diễn ra");
             }
@@ -862,6 +864,7 @@ public class HomeFragment extends Fragment {
             if (layoutFloatingEggContainer != null && !isFloatingEggDismissed) {
                 layoutFloatingEggContainer.setVisibility(View.VISIBLE);
             }
+            lastDisplayedDays = -1;
         }
 
         countDownTimer = new CountDownTimer(diffMs, 1000) {
@@ -877,21 +880,32 @@ public class HomeFragment extends Fragment {
                 long secs = seconds % 60;
 
                 if (millisUntilFinished > fortyEightHoursMs) {
-                    // Trên 48 tiếng: Hiện đơn giản, ẩn bento, ẩn đồng hồ nổi
-                    if (layoutSimpleDays != null) layoutSimpleDays.setVisibility(View.VISIBLE);
-                    if (layoutBentoCountdown != null) layoutBentoCountdown.setVisibility(View.GONE);
-                    if (layoutFloatingEggContainer != null) {
-                        layoutFloatingEggContainer.setVisibility(View.GONE);
-                    }
-                    if (tvCountdownDaysSimple != null) {
-                        tvCountdownDaysSimple.setText("Còn " + days + " ngày nữa diễn ra");
+                    // Trên 48 tiếng: Chỉ cập nhật UI khi số ngày thực sự thay đổi
+                    if (lastDisplayedDays != days) {
+                        lastDisplayedDays = days;
+                        if (layoutSimpleDays != null && layoutSimpleDays.getVisibility() != View.VISIBLE) {
+                            layoutSimpleDays.setVisibility(View.VISIBLE);
+                        }
+                        if (layoutBentoCountdown != null && layoutBentoCountdown.getVisibility() != View.GONE) {
+                            layoutBentoCountdown.setVisibility(View.GONE);
+                        }
+                        if (layoutFloatingEggContainer != null && layoutFloatingEggContainer.getVisibility() != View.GONE) {
+                            layoutFloatingEggContainer.setVisibility(View.GONE);
+                        }
+                        if (tvCountdownDaysSimple != null) {
+                            tvCountdownDaysSimple.setText("Còn " + days + " ngày nữa diễn ra");
+                        }
                     }
                 } else {
-                    // Dưới 48 tiếng: Hiện bento, ẩn đơn giản, hiện đồng hồ nổi
-                    if (layoutSimpleDays != null) layoutSimpleDays.setVisibility(View.GONE);
-                    if (layoutBentoCountdown != null) layoutBentoCountdown.setVisibility(View.VISIBLE);
-                    
-                    if (layoutFloatingEggContainer != null && !isFloatingEggDismissed) {
+                    // Dưới 48 tiếng: Khôi phục cờ, đổi layout hiển thị Bento Grid và đếm ngược từng giây
+                    lastDisplayedDays = -1;
+                    if (layoutSimpleDays != null && layoutSimpleDays.getVisibility() != View.GONE) {
+                        layoutSimpleDays.setVisibility(View.GONE);
+                    }
+                    if (layoutBentoCountdown != null && layoutBentoCountdown.getVisibility() != View.VISIBLE) {
+                        layoutBentoCountdown.setVisibility(View.VISIBLE);
+                    }
+                    if (layoutFloatingEggContainer != null && !isFloatingEggDismissed && layoutFloatingEggContainer.getVisibility() != View.VISIBLE) {
                         layoutFloatingEggContainer.setVisibility(View.VISIBLE);
                     }
 

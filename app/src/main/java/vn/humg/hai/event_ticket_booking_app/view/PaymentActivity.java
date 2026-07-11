@@ -499,12 +499,17 @@ public class PaymentActivity extends AppCompatActivity {
         String title = "Đặt vé thành công! 🎟️";
         String body = "Bạn đã đặt thành công " + quantity + " vé cho sự kiện \"" + eventTitle + "\".";
         
-        // 1. Lưu SQLite
-        vn.humg.hai.event_ticket_booking_app.utils.LocalNotificationDbHelper.getInstance(this)
-            .insertNotification(title, body, "TICKET");
-            
-        // 2. Gửi Broadcast để cập nhật Badge
-        Intent intent = new Intent("vn.humg.hai.event_ticket_booking_app.UPDATE_UNREAD_COUNT");
-        sendBroadcast(intent);
+        // Chạy trên background thread để tránh chặn luồng UI (Disk I/O)
+        new Thread(() -> {
+            // 1. Lưu SQLite sử dụng Application Context để tránh rò rỉ bộ nhớ (Memory Leak)
+            vn.humg.hai.event_ticket_booking_app.utils.LocalNotificationDbHelper.getInstance(getApplicationContext())
+                .insertNotification(title, body, "TICKET");
+                
+            // 2. Gửi Broadcast trên luồng chính sau khi hoàn tất ghi DB
+            runOnUiThread(() -> {
+                Intent intent = new Intent("vn.humg.hai.event_ticket_booking_app.UPDATE_UNREAD_COUNT");
+                sendBroadcast(intent);
+            });
+        }).start();
     }
 }

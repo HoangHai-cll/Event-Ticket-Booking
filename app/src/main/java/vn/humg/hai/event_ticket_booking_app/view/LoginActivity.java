@@ -23,7 +23,7 @@ import vn.humg.hai.event_ticket_booking_app.viewmodel.AuthViewModel;
 public class LoginActivity extends AppCompatActivity {
 
     private MaterialButton btnLogin, btnGoogle, btnFacebook;
-    private TextView tvRegisterLink;
+    private TextView tvRegisterLink, tvSkipLogin;
     private TextInputEditText edtEmail, edtPassword;
     private TextInputLayout tilEmail, tilPassword;
     private LinearLayout layoutContainer;
@@ -101,6 +101,7 @@ public class LoginActivity extends AppCompatActivity {
         btnGoogle = findViewById(R.id.btn_login_google);
         btnFacebook = findViewById(R.id.btn_login_facebook);
         tvRegisterLink = findViewById(R.id.tv_link_register);
+        tvSkipLogin = findViewById(R.id.tv_skip_login);
         edtEmail = findViewById(R.id.edt_login_email);
         edtPassword = findViewById(R.id.edt_login_password);
         tilEmail = findViewById(R.id.til_login_email);
@@ -116,6 +117,15 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initEvents() {
+        if (tvSkipLogin != null) {
+            tvSkipLogin.setOnClickListener(v -> {
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+            });
+        }
+
         // Chuyển sang màn hình đăng ký
         tvRegisterLink.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);

@@ -143,12 +143,7 @@ public class SplashActivity extends AppCompatActivity {
      */
     private void navigateToNextScreenDelayed() {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Intent intent;
-            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                intent = new Intent(SplashActivity.this, MainActivity.class);
-            } else {
-                intent = new Intent(SplashActivity.this, LoginActivity.class);
-            }
+            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
             startActivity(intent);
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();

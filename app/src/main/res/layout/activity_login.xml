@@ -199,5 +199,19 @@
                 app:strokeColor="@color/rule_border"
                 app:cornerRadius="16dp" />
         </LinearLayout>
+
+        <!-- Nút Bỏ qua (Xem với tư cách khách) -->
+        <TextView
+            android:id="@+id/tv_skip_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:text="Bỏ qua &amp; Khám phá ứng dụng"
+            android:textColor="@color/brand_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 </ScrollView>

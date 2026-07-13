@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Hàm tiện ích hỗ trợ xác thực
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // 1. Phân quyền bộ sưu tập Users
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+      
+      // Subcollection ví voucher cá nhân
+      match /user_vouchers/{voucherId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // 2. Phân quyền bộ sưu tập Events (Sự kiện công khai)
+    match /events/{eventId} {
+      allow read: if true; // Ai cũng có thể xem danh sách sự kiện
+      allow write: if isAdmin(); // Chỉ quản trị viên mới được thêm/sửa/xóa sự kiện
+    }
+
+    // 3. Phân quyền bộ sưu tập Bookings (Hóa đơn đặt vé)
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn(); // Người dùng đăng nhập được tạo hóa đơn đặt vé
+      allow update: if isAdmin(); // Chỉ Admin mới được cập nhật trạng thái soát vé (Used) hoặc duyệt hoàn tiền (Cancelled)
+      allow delete: if isAdmin();
+    }
+
+    // 4. Phân quyền bộ sưu tập Reviews (Đánh giá & Phản hồi)
+    match /reviews/{reviewId} {
+      allow read: if true; // Công khai cho tất cả mọi người đọc đánh giá
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // 5. Phân quyền bộ sưu tập Favorites (Sự kiện yêu thích cá nhân)
+    match /favorites/{favoriteId} {
+      allow read, write: if isSignedIn() && (favoriteId.startsWith(request.auth.uid) || resource.data.userId == request.auth.uid);
+    }
+
+    // 6. Phân quyền bộ sưu tập System Vouchers (Voucher hệ thống)
+    match /system_vouchers/{voucherId} {
+      allow read: if isSignedIn(); // Người dùng đăng nhập mới được xem khuyến mãi khả dụng
+      allow write: if isAdmin(); // Chỉ Admin được tạo và cập nhật mã giảm giá mới
+    }
+  }
+}

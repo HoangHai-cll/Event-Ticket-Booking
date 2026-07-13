@@ -174,8 +174,40 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkUserRoleAndSetupFragments(Bundle savedInstanceState) {
         String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null) return;
+        if (uid == null) {
+            setupUIForRole(false, savedInstanceState);
+            setupGuestDrawerHeader();
+            return;
+        }
         authViewModel.getUserProfile(uid);
+    }
+
+    private void setupGuestDrawerHeader() {
+        if (navViewDrawer != null) {
+            View headerView = navViewDrawer.getHeaderView(0);
+            if (headerView != null) {
+                TextView tvName = headerView.findViewById(R.id.tv_nav_header_name);
+                TextView tvRole = headerView.findViewById(R.id.tv_nav_header_role);
+                ImageView ivAvatar = headerView.findViewById(R.id.iv_nav_header_avatar);
+                
+                if (tvName != null) {
+                    tvName.setText("Khách");
+                }
+                if (tvRole != null) {
+                    tvRole.setText("Chưa đăng nhập - Chạm để đăng nhập");
+                    tvRole.setOnClickListener(v -> {
+                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                    });
+                }
+                if (ivAvatar != null) {
+                    ivAvatar.setOnClickListener(v -> {
+                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                    });
+                }
+            }
+        }
     }
 
     private void setupUIForRole(boolean isAdmin, Bundle savedInstanceState) {
@@ -247,6 +279,11 @@ public class MainActivity extends AppCompatActivity {
         navHome.setOnClickListener(v -> navigateToTab("Home"));
         navAdmin.setOnClickListener(v -> navigateToTab("Admin"));
         navScanQr.setOnClickListener(v -> {
+            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                Toast.makeText(this, "Vui lòng đăng nhập để sử dụng tính năng này", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, LoginActivity.class));
+                return;
+            }
             ScanOptions options = new ScanOptions();
             options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
             options.setPrompt("Quét mã vé để check-in");
@@ -266,8 +303,18 @@ public class MainActivity extends AppCompatActivity {
             if (id == R.id.nav_home_drawer) {
                 navigateToTab("Home");
             } else if (id == R.id.nav_notifications_drawer) {
+                if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                    Toast.makeText(this, "Vui lòng đăng nhập để xem thông báo", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, LoginActivity.class));
+                    return true;
+                }
                 startActivity(new Intent(this, NotificationActivity.class));
             } else if (id == R.id.nav_favorites_drawer) {
+                if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                    Toast.makeText(this, "Vui lòng đăng nhập để xem danh sách yêu thích", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, LoginActivity.class));
+                    return true;
+                }
                 navigateToTab("Home");
                 if (homeFragment instanceof HomeFragment) {
                     ((HomeFragment) homeFragment).filterByFavoritesOnly();
@@ -275,6 +322,11 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_vouchers_drawer) {
                 navigateToTab("Tickets");
             } else if (id == R.id.nav_settings_drawer) {
+                if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                    Toast.makeText(this, "Vui lòng đăng nhập để thay đổi cài đặt", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, LoginActivity.class));
+                    return true;
+                }
                 startActivity(new Intent(this, SettingsActivity.class));
             } else if (id == R.id.nav_support_drawer) {
                 startActivity(new Intent(this, HelpCenterActivity.class));
@@ -315,6 +367,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void navigateToTab(String tag) {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            if ("Tickets".equals(tag) || "History".equals(tag) || "Profile".equals(tag) || "Admin".equals(tag)) {
+                Toast.makeText(this, "Vui lòng đăng nhập để sử dụng tính năng này", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, LoginActivity.class));
+                return;
+            }
+        }
+
         Fragment target;
         switch (tag) {
             case "Admin": target = adminFragment; break;

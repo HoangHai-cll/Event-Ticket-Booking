@@ -45,6 +45,7 @@ import vn.humg.hai.event_ticket_booking_app.utils.EventReminderReceiver;
 import vn.humg.hai.event_ticket_booking_app.view.EventDetailActivity;
 import vn.humg.hai.event_ticket_booking_app.view.MainActivity;
 import vn.humg.hai.event_ticket_booking_app.view.NotificationActivity;
+import vn.humg.hai.event_ticket_booking_app.view.LoginActivity;
 
 public class HomeFragment extends Fragment {
     private EventViewModel eventViewModel;
@@ -308,6 +309,7 @@ public class HomeFragment extends Fragment {
         String userId = FirebaseAuth.getInstance().getUid();
         if (userId == null) {
             Toast.makeText(getContext(), "Vui lòng đăng nhập để thích sự kiện", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(getContext(), LoginActivity.class));
             return;
         }
         
@@ -337,6 +339,11 @@ public class HomeFragment extends Fragment {
 
         if (layoutNotificationBell != null) {
             layoutNotificationBell.setOnClickListener(v -> {
+                if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                    Toast.makeText(getContext(), "Vui lòng đăng nhập để xem thông báo", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(getContext(), LoginActivity.class));
+                    return;
+                }
                 Intent intent = new Intent(getContext(), NotificationActivity.class);
                 startActivity(intent);
             });
@@ -713,6 +720,11 @@ public class HomeFragment extends Fragment {
     }
 
     private void openEventDetail(Event event, ImageView imageView) {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            Toast.makeText(getContext(), "Vui lòng đăng nhập để xem chi tiết sự kiện", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(getContext(), LoginActivity.class));
+            return;
+        }
         Intent intent = new Intent(getContext(), EventDetailActivity.class);
         intent.putExtra("EXTRA_EVENT_ID", event.getEventId());
         
